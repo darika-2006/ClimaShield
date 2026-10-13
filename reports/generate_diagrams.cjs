@@ -2,7 +2,7 @@ const { chromium } = require('@playwright/test');
 const fs = require('fs');
 const path = require('path');
 
-const ASSETS_DIR = path.join(__dirname, 'assets_report');
+const ASSETS_DIR = path.join(__dirname, 'assets');
 
 // Helper to render HTML/SVG string to PNG using Playwright
 async function renderHtmlToPng(browser, htmlContent, outputPath, width = 1200, height = 700) {

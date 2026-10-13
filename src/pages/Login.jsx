@@ -99,6 +99,7 @@ export default function Login() {
       localStorage.setItem('climashield_user', JSON.stringify(data.user));
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
+      logAuditSession(data.user);
       navigate('/citizen');
       window.location.reload();
     } catch (err) {
@@ -121,7 +122,27 @@ export default function Login() {
     }
   };
 
+  const logAuditSession = (userObj) => {
+    try {
+      const stored = localStorage.getItem('climashield_audit_history');
+      let list = stored ? JSON.parse(stored) : [];
+      const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const personaLabel = userObj.full_name || userObj.email.split('@')[0];
+      const entry = {
+        label: `Active Login: ${personaLabel} (${userObj.role})`,
+        timestamp: timeStr,
+        type: 'AUTH_SESSION',
+      };
+      list = [entry, ...list.filter((item) => item.label !== entry.label)].slice(0, 8);
+      localStorage.setItem('climashield_audit_history', JSON.stringify(list));
+      window.dispatchEvent(new Event('audit_history_updated'));
+    } catch (e) {
+      console.warn('Audit history log error:', e);
+    }
+  };
+
   const redirectUser = (userObj) => {
+    logAuditSession(userObj);
     if (userObj.role === 'ADMIN' || userObj.role === 'DISTRICT_OFFICER') {
       navigate('/admin');
     } else {

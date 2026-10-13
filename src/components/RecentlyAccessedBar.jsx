@@ -5,22 +5,32 @@ export default function RecentlyAccessedBar() {
   const [history, setHistory] = useState([]);
 
   useEffect(() => {
-    const stored = localStorage.getItem('climashield_audit_history');
-    if (stored) {
-      try {
-        setHistory(JSON.parse(stored));
-      } catch (e) {
-        setHistory([]);
+    const updateHistory = () => {
+      const stored = localStorage.getItem('climashield_audit_history');
+      if (stored) {
+        try {
+          setHistory(JSON.parse(stored));
+        } catch (e) {
+          setHistory([]);
+        }
+      } else {
+        const initial = [
+          { label: 'Thoothukudi Shelter Search', timestamp: '10:42 AM', type: 'SHELTER_LOOKUP' },
+          { label: 'Chennai Rain Forecast', timestamp: '10:30 AM', type: 'WEATHER_QUERY' },
+          { label: 'Madurai Heat Analysis', timestamp: '10:15 AM', type: 'SIMULATION' },
+        ];
+        setHistory(initial);
+        localStorage.setItem('climashield_audit_history', JSON.stringify(initial));
       }
-    } else {
-      const initial = [
-        { label: 'Thoothukudi Shelter Search', timestamp: '10:42 AM', type: 'SHELTER_LOOKUP' },
-        { label: 'Chennai Rain Forecast', timestamp: '10:30 AM', type: 'WEATHER_QUERY' },
-        { label: 'Madurai Heat Analysis', timestamp: '10:15 AM', type: 'SIMULATION' },
-      ];
-      setHistory(initial);
-      localStorage.setItem('climashield_audit_history', JSON.stringify(initial));
-    }
+    };
+
+    updateHistory();
+    window.addEventListener('audit_history_updated', updateHistory);
+    window.addEventListener('storage', updateHistory);
+    return () => {
+      window.removeEventListener('audit_history_updated', updateHistory);
+      window.removeEventListener('storage', updateHistory);
+    };
   }, []);
 
   if (history.length === 0) return null;

@@ -104,14 +104,31 @@ def create_report():
         r_txt.font.size = Pt(size)
         return p
 
-    def add_figure(img_path, fig_caption, width=Inches(5.4), space_before=4, space_after=8):
+    REPORT_DIR = os.path.dirname(os.path.abspath(__file__))
+    ASSETS_DIR = os.path.join(REPORT_DIR, 'assets')
+
+    def resolve_image_path(img_path):
+        if not img_path:
+            return None
         if os.path.exists(img_path):
+            return img_path
+        candidate = os.path.join(ASSETS_DIR, os.path.basename(img_path))
+        if os.path.exists(candidate):
+            return candidate
+        candidate2 = os.path.join(REPORT_DIR, img_path)
+        if os.path.exists(candidate2):
+            return candidate2
+        return None
+
+    def add_figure(img_path, fig_caption, width=Inches(5.4), space_before=4, space_after=8):
+        actual_path = resolve_image_path(img_path)
+        if actual_path:
             p_img = doc.add_paragraph()
             p_img.alignment = WD_ALIGN_PARAGRAPH.CENTER
             p_img.paragraph_format.space_before = Pt(space_before)
             p_img.paragraph_format.space_after = Pt(2)
             run_img = p_img.add_run()
-            run_img.add_picture(img_path, width=width)
+            run_img.add_picture(actual_path, width=width)
         else:
             add_para(f"[Image Missing: {img_path}]", align=WD_ALIGN_PARAGRAPH.CENTER, italic=True)
 
@@ -221,12 +238,13 @@ def create_report():
     add_para("In partial fulfillment for the award of the degree\nof\nBACHELOR OF TECHNOLOGY\nin\nINFORMATION TECHNOLOGY", 
              align=WD_ALIGN_PARAGRAPH.CENTER, space_before=18, space_after=24, size=12, indent=False)
 
-    if os.path.exists('assets_report/nec_logo.png'):
+    logo_path1 = resolve_image_path('nec_logo.png')
+    if logo_path1:
         p_logo = doc.add_paragraph()
         p_logo.alignment = WD_ALIGN_PARAGRAPH.CENTER
         p_logo.paragraph_format.space_before = Pt(6)
         p_logo.paragraph_format.space_after = Pt(18)
-        p_logo.add_run().add_picture('assets_report/nec_logo.png', width=Inches(1.3))
+        p_logo.add_run().add_picture(logo_path1, width=Inches(1.3))
 
     add_para("NATIONAL ENGINEERING COLLEGE\n(An Autonomous Institution affiliated to Anna University, Chennai)\nK.R.NAGAR, KOVILPATTI - 628503\n\nOCTOBER 2026", 
              align=WD_ALIGN_PARAGRAPH.CENTER, space_before=12, space_after=0, bold=True, size=12, indent=False)
@@ -275,12 +293,13 @@ def create_report():
     add_para("(An Autonomous Institution affiliated to Anna University, Chennai)", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=0, space_after=4, size=11, indent=False)
     add_para("K.R.NAGAR, KOVILPATTI - 628503", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=0, space_after=18, bold=True, size=12, indent=False)
 
-    if os.path.exists('assets_report/nec_logo.png'):
+    logo_path2 = resolve_image_path('nec_logo.png')
+    if logo_path2:
         p_logo2 = doc.add_paragraph()
         p_logo2.alignment = WD_ALIGN_PARAGRAPH.CENTER
         p_logo2.paragraph_format.space_before = Pt(6)
         p_logo2.paragraph_format.space_after = Pt(18)
-        p_logo2.add_run().add_picture('assets_report/nec_logo.png', width=Inches(1.1))
+        p_logo2.add_run().add_picture(logo_path2, width=Inches(1.1))
 
     add_para("BONAFIDE CERTIFICATE", align=WD_ALIGN_PARAGRAPH.CENTER, space_before=12, space_after=24, bold=True, size=14, indent=False)
 
@@ -1541,7 +1560,7 @@ def create_report():
     for ref in references:
         add_bullet(ref, bold_prefix="• ", space_before=1.5, space_after=3, size=11, line_spacing=1.1)
 
-    output_filename = "ClimaShield_TN_Project_Report.docx"
+    output_filename = os.path.join(REPORT_DIR, "ClimaShield_TN_Project_Report.docx")
     doc.save(output_filename)
     print(f"✅ Calibrated 38-page report saved successfully to {output_filename}!")
 

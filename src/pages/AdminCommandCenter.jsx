@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
-import { ShieldAlert, CheckCircle, XCircle, AlertOctagon, Radio, Users, Building, Home, Edit3, Send, Eye, RefreshCw } from 'lucide-react';
+import { ShieldAlert, CheckCircle, XCircle, AlertOctagon, Radio, Users, Building, Home, Edit3, Send, Eye, RefreshCw, Clock } from 'lucide-react';
 
 export default function AdminCommandCenter() {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { t } = useLanguage();
 
@@ -149,12 +151,33 @@ export default function AdminCommandCenter() {
             </div>
           </div>
 
-          <button
-            onClick={fetchDashboardData}
-            style={{ background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.3)', color: '#ffffff', padding: '10px 18px', borderRadius: '20px', cursor: 'pointer', fontWeight: '700', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px' }}
-          >
-            <RefreshCw size={16} /> Refresh Telemetry
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <button
+              onClick={() => navigate('/timeline')}
+              style={{
+                background: 'rgba(255,255,255,0.2)',
+                border: '1px solid rgba(255,255,255,0.4)',
+                color: '#ffffff',
+                padding: '10px 18px',
+                borderRadius: '20px',
+                cursor: 'pointer',
+                fontWeight: '700',
+                fontSize: '13px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+              }}
+            >
+              <Clock size={16} /> Land-Use Timeline
+            </button>
+
+            <button
+              onClick={fetchDashboardData}
+              style={{ background: 'rgba(255,255,255,0.15)', border: '1px solid rgba(255,255,255,0.3)', color: '#ffffff', padding: '10px 18px', borderRadius: '20px', cursor: 'pointer', fontWeight: '700', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '8px' }}
+            >
+              <RefreshCw size={16} /> Refresh Telemetry
+            </button>
+          </div>
         </div>
 
         {/* Telemetry Metrics Bar */}

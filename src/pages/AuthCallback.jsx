@@ -53,11 +53,25 @@ export default function AuthCallback() {
           throw new Error(data.error || 'Backend authentication handshake failed');
         }
 
-        // 4. Store JWT token & user payload in local storage
         localStorage.setItem('climashield_jwt_token', data.token);
         localStorage.setItem('climashield_user', JSON.stringify(data.user));
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify(data.user));
+
+        try {
+          const stored = localStorage.getItem('climashield_audit_history');
+          let list = stored ? JSON.parse(stored) : [];
+          const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+          const personaLabel = data.user.full_name || data.user.email.split('@')[0];
+          const entry = {
+            label: `OAuth Login: ${personaLabel} (${data.user.role})`,
+            timestamp: timeStr,
+            type: 'AUTH_OAUTH',
+          };
+          list = [entry, ...list.filter((item) => item.label !== entry.label)].slice(0, 8);
+          localStorage.setItem('climashield_audit_history', JSON.stringify(list));
+          window.dispatchEvent(new Event('audit_history_updated'));
+        } catch (e) {}
 
         setStatus('Authentication verified! Redirecting to secure portal...');
 

@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const http = require('http');
 
-const ASSETS_DIR = path.join(__dirname, 'assets_report');
+const ASSETS_DIR = path.join(__dirname, 'assets');
 if (!fs.existsSync(ASSETS_DIR)) {
   fs.mkdirSync(ASSETS_DIR, { recursive: true });
 }

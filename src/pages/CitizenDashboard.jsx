@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
-import { MapPin, Navigation, ShieldCheck, AlertTriangle, PhoneCall, Camera, Send, Plus, CheckCircle } from 'lucide-react';
+import { MapPin, Navigation, ShieldCheck, AlertTriangle, PhoneCall, Camera, Send, Plus, CheckCircle, Clock } from 'lucide-react';
 
 export default function CitizenDashboard() {
+  const navigate = useNavigate();
   const { user } = useAuth();
   const { t } = useLanguage();
 
@@ -180,25 +182,47 @@ export default function CitizenDashboard() {
             </div>
           </div>
 
-          <button
-            onClick={() => setShowReportModal(true)}
-            style={{
-              background: 'linear-gradient(135deg, #00bfa6, #2a9d8f)',
-              color: '#ffffff',
-              border: 'none',
-              borderRadius: '24px',
-              padding: '12px 22px',
-              fontWeight: '700',
-              fontSize: '14px',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              boxShadow: '0 4px 16px rgba(0, 191, 166, 0.35)',
-            }}
-          >
-            <Plus size={18} /> Submit Hazard Report
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <button
+              onClick={() => navigate('/timeline')}
+              style={{
+                background: 'rgba(255, 255, 255, 0.2)',
+                color: '#ffffff',
+                border: '1px solid rgba(255, 255, 255, 0.4)',
+                borderRadius: '24px',
+                padding: '12px 20px',
+                fontWeight: '700',
+                fontSize: '13px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                transition: 'all 0.2s ease',
+              }}
+            >
+              <Clock size={16} /> Satellite Time Machine
+            </button>
+
+            <button
+              onClick={() => setShowReportModal(true)}
+              style={{
+                background: 'linear-gradient(135deg, #00bfa6, #2a9d8f)',
+                color: '#ffffff',
+                border: 'none',
+                borderRadius: '24px',
+                padding: '12px 22px',
+                fontWeight: '700',
+                fontSize: '14px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                boxShadow: '0 4px 16px rgba(0, 191, 166, 0.35)',
+              }}
+            >
+              <Plus size={18} /> Submit Hazard Report
+            </button>
+          </div>
         </div>
 
         {/* Active Emergency Alert Banner if dispatched by Admin */}
