@@ -1,0 +1,5 @@
+[
+  { "stateCode": "RJ", "type": "HEATWAVE", "severity": "CRITICAL", "message": "Extreme heat in Rajasthan" },
+  { "stateCode": "KL", "type": "FLOOD", "severity": "HIGH", "message": "Heavy rains in Kerala" },
+  { "stateCode": "OR", "type": "CYCLONE_WATCH", "severity": "HIGH", "message": "Cyclone watch for Odisha" }
+]
