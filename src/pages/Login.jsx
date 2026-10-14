@@ -7,7 +7,7 @@ import { supabase, isSupabaseConfigured } from '../lib/supabaseClient';
 
 export default function Login() {
   const { login, demoLogin } = useAuth();
-  const { t } = useLanguage();
+  const { t, tDistrict, language } = useLanguage();
   const navigate = useNavigate();
 
   const [authMode, setAuthMode] = useState('SIGN_IN'); // 'SIGN_IN' or 'SIGN_UP'
@@ -214,13 +214,13 @@ export default function Login() {
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: '36px' }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', background: 'rgba(42, 157, 143, 0.12)', border: '1px solid #b8e6d5', color: '#2a9d8f', padding: '8px 20px', borderRadius: '30px', fontWeight: '700', fontSize: '13px', marginBottom: '12px' }}>
-            <Shield size={18} color="#2a9d8f" /> STATE DISASTER MANAGEMENT AUTHORIZATION
+            <Shield size={18} color="#2a9d8f" /> {t('authBadge')}
           </div>
           <h1 style={{ fontSize: '32px', color: '#2c3e50', margin: '0 0 8px 0', fontWeight: '800', fontFamily: 'Poppins, sans-serif' }}>
-            ClimaShield TN Enterprise Portal
+            {t('portalHeading')}
           </h1>
           <p style={{ color: '#6b8e9f', fontSize: '15px', margin: 0 }}>
-            Role-Based Access Control (RBAC) & Authenticated Operations Portal
+            {t('portalSubheading')}
           </p>
         </div>
 
@@ -244,7 +244,7 @@ export default function Login() {
                   fontSize: '14px',
                 }}
               >
-                Sign In
+                {t('navSignIn')}
               </button>
               <button
                 type="button"
@@ -261,7 +261,7 @@ export default function Login() {
                   fontSize: '14px',
                 }}
               >
-                Create Citizen Account
+                {t('orCreateCitizenAccount')}
               </button>
             </div>
 
@@ -294,13 +294,13 @@ export default function Login() {
               }}
             >
               <img src="https://www.google.com/favicon.ico" alt="Google" style={{ width: '18px', height: '18px' }} />
-              Continue with Google Workspace (OAuth 2.0)
+              {t('continueWithGoogle')}
             </button>
 
             <div style={{ margin: '16px 0', textAlign: 'center', position: 'relative' }}>
               <hr style={{ border: 'none', borderTop: '1px solid #e8f4f8' }} />
               <span style={{ position: 'absolute', top: '-10px', left: '50%', transform: 'translateX(-50%)', background: '#ffffff', padding: '0 10px', color: '#6b8e9f', fontSize: '11px', fontWeight: '600' }}>
-                OR {authMode === 'SIGN_IN' ? 'EMAIL LOGIN' : 'DIRECT REGISTER'}
+                {authMode === 'SIGN_IN' ? t('orSignInWithCredentials') : t('orCreateCitizenAccount')}
               </span>
             </div>
 
@@ -309,7 +309,7 @@ export default function Login() {
               <form onSubmit={handleCustomLogin}>
                 <div style={{ marginBottom: '16px' }}>
                   <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#2c3e50', marginBottom: '6px' }}>
-                    User Email Address
+                    {t('emailAddress')}
                   </label>
                   <div style={{ position: 'relative' }}>
                     <User size={16} color="#6b8e9f" style={{ position: 'absolute', left: '14px', top: '12px' }} />
@@ -326,7 +326,7 @@ export default function Login() {
 
                 <div style={{ marginBottom: '24px' }}>
                   <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', color: '#2c3e50', marginBottom: '6px' }}>
-                    Account Password
+                    {t('password')}
                   </label>
                   <div style={{ position: 'relative' }}>
                     <Lock size={16} color="#6b8e9f" style={{ position: 'absolute', left: '14px', top: '12px' }} />
@@ -361,7 +361,7 @@ export default function Login() {
                     boxShadow: '0 4px 16px rgba(42, 157, 143, 0.3)',
                   }}
                 >
-                  {loading ? 'Authenticating...' : 'Sign In to Portal'} <ArrowRight size={18} />
+                  {loading ? (language === 'ta' ? 'சரிபார்க்கப்படுகிறது...' : 'Authenticating...') : t('signInButton')} <ArrowRight size={18} />
                 </button>
               </form>
             ) : (
@@ -369,7 +369,7 @@ export default function Login() {
               <form onSubmit={handleSignUpSubmit}>
                 <div style={{ marginBottom: '14px' }}>
                   <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#2c3e50', marginBottom: '4px' }}>
-                    Full Legal Name
+                    {t('fullName')}
                   </label>
                   <div style={{ position: 'relative' }}>
                     <User size={16} color="#6b8e9f" style={{ position: 'absolute', left: '14px', top: '12px' }} />
@@ -386,7 +386,7 @@ export default function Login() {
 
                 <div style={{ marginBottom: '14px' }}>
                   <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#2c3e50', marginBottom: '4px' }}>
-                    Email Address
+                    {t('emailAddress')}
                   </label>
                   <div style={{ position: 'relative' }}>
                     <User size={16} color="#6b8e9f" style={{ position: 'absolute', left: '14px', top: '12px' }} />
@@ -404,7 +404,7 @@ export default function Login() {
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '14px' }}>
                   <div>
                     <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#2c3e50', marginBottom: '4px' }}>
-                      Password
+                      {t('password')}
                     </label>
                     <input
                       type="password"
@@ -417,7 +417,7 @@ export default function Login() {
                   </div>
                   <div>
                     <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#2c3e50', marginBottom: '4px' }}>
-                      Confirm Password
+                      {t('confirmPassword')}
                     </label>
                     <input
                       type="password"
@@ -433,7 +433,7 @@ export default function Login() {
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginBottom: '20px' }}>
                   <div>
                     <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#2c3e50', marginBottom: '4px' }}>
-                      Phone Number
+                      {t('phoneNumber')}
                     </label>
                     <input
                       type="tel"
@@ -445,7 +445,7 @@ export default function Login() {
                   </div>
                   <div>
                     <label style={{ display: 'block', fontSize: '12px', fontWeight: '600', color: '#2c3e50', marginBottom: '4px' }}>
-                      Home District
+                      {t('homeDistrict')}
                     </label>
                     <select
                       value={signUpData.homeDistrict}
@@ -453,7 +453,7 @@ export default function Login() {
                       style={{ width: '100%', padding: '10px 12px', border: '1px solid #a8dadc', borderRadius: '10px', fontSize: '13px', boxSizing: 'border-box', background: '#f8fffe', color: '#2c3e50', outline: 'none' }}
                     >
                       {tnDistricts.map((d) => (
-                        <option key={d} value={d}>{d}</option>
+                        <option key={d} value={d}>{tDistrict(d)}</option>
                       ))}
                     </select>
                   </div>
@@ -479,7 +479,7 @@ export default function Login() {
                     boxShadow: '0 4px 16px rgba(13, 148, 136, 0.3)',
                   }}
                 >
-                  {loading ? 'Creating Account...' : 'Register Citizen Account'} <UserPlus size={18} />
+                  {loading ? (language === 'ta' ? 'கணக்கு உருவாக்கப்படுகிறது...' : 'Creating Account...') : t('createAccountButton')} <UserPlus size={18} />
                 </button>
               </form>
             )}
@@ -489,14 +489,14 @@ export default function Login() {
           <div style={{ background: '#ffffff', border: '1px solid #b8e6d5', borderRadius: '16px', padding: '28px', boxShadow: '0 8px 24px rgba(42, 157, 143, 0.08)' }}>
             <div style={{ marginBottom: '18px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <h2 style={{ fontSize: '18px', color: '#2c3e50', margin: 0, display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '700' }}>
-                <Building size={20} color="#2a9d8f" /> Pre-Seeded Personas Quick-Fill
+                <Building size={20} color="#2a9d8f" /> {t('demoPersonasQuickFill')}
               </h2>
               <span style={{ background: '#e8f4f8', color: '#2a9d8f', fontSize: '11px', fontWeight: '700', padding: '3px 10px', borderRadius: '12px', border: '1px solid #a8dadc' }}>
-                5 Personas Ready
+                {language === 'ta' ? '5 கணக்குகள் தயார்' : '5 Personas Ready'}
               </span>
             </div>
             <p style={{ color: '#6b8e9f', fontSize: '13px', margin: '0 0 16px 0', lineHeight: '1.5' }}>
-              Click any pre-seeded persona below to auto-authenticate and test role-specific RBAC workflows:
+              {language === 'ta' ? 'முன்னமைக்கப்பட்ட கணக்குகளைத் தேர்வுசெய்து தானாக உள்நுழைய கீழே கிளிக் செய்க:' : 'Click any pre-seeded persona below to auto-authenticate and test role-specific RBAC workflows:'}
             </p>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
@@ -516,11 +516,15 @@ export default function Login() {
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
                     <span style={{ fontWeight: '700', fontSize: '14px', color: '#2c3e50' }}>{p.name}</span>
                     <span style={{ background: p.badgeColor, color: '#ffffff', fontSize: '10px', fontWeight: '800', padding: '2px 8px', borderRadius: '12px', textTransform: 'uppercase' }}>
-                      {p.role}
+                      {p.role === 'ADMIN'
+                        ? (language === 'ta' ? 'நிர்வாகி' : 'ADMIN')
+                        : p.role === 'DISTRICT_OFFICER'
+                        ? (language === 'ta' ? 'அதிகாரி' : 'OFFICER')
+                        : (language === 'ta' ? 'குடிமகன்' : 'CITIZEN')}
                     </span>
                   </div>
                   <div style={{ fontSize: '12px', color: '#2c3e50', fontWeight: '500', marginBottom: '4px' }}>
-                    {p.email} • <em>{p.district}</em>
+                    {p.email} • <em>{tDistrict(p.district)}</em>
                   </div>
                   <div style={{ fontSize: '11px', color: '#6b8e9f' }}>{p.desc}</div>
                 </div>

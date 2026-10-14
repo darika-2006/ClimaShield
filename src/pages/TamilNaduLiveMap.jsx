@@ -6,6 +6,8 @@ import { MAJOR_CITIES, getDistrictMeta, TN_DISTRICTS } from "../data/tnDistricts
 import { useTNWeather } from "../hooks/useTNWeather";
 import { getLiveRadarTileUrl } from "../services/rainViewerService";
 import { Shield, Thermometer, CloudRain, Radio, MapPin, AlertTriangle, RefreshCw, CheckCircle, FileText, Crosshair, Navigation } from "lucide-react";
+import { logRecentActivity } from "../utils/auditLogger";
+import { useLanguage } from "../context/LanguageContext";
 
 // Map center for Tamil Nadu
 const TN_CENTER = [11.1271, 78.6569];
@@ -62,14 +64,15 @@ function MapEventsHandler({ onMapClick }) {
 function getRiskColor(level) {
   switch (level) {
     case "CRITICAL WARNING":
-      return "#e76f51";
+    case "CRITICAL":
+      return "#EF4444";
     case "ALERT":
-      return "#f4a261";
+      return "#F59E0B";
     case "WATCH":
-      return "#457b9d";
+      return "#0284C7";
     case "NORMAL":
     default:
-      return "#2a9d8f";
+      return "#10B981";
   }
 }
 
@@ -88,6 +91,7 @@ function getRainColor(rain) {
 }
 
 export default function TamilNaduLiveMap() {
+  const { t, tDistrict, tHazard, tZone, language } = useLanguage();
   const { districtData, loading, isCached, error, lastUpdated, refetch } = useTNWeather();
   const [selectedMetric, setSelectedMetric] = useState("risk");
   const [selectedDistrictKey, setSelectedDistrictKey] = useState("Chennai");
@@ -147,7 +151,7 @@ export default function TamilNaduLiveMap() {
       } catch (err) {
         try {
           const res = await fetch(
-            "https://raw.githubusercontent.com/sabarisastha/iTantra-POC/main/Project_documents/tamilnadu_districts.json"
+            "https://cdn.jsdelivr.net/gh/udit-001/india-maps-data@main/geojson/states/tamil-nadu.geojson"
           );
           if (res.ok) {
             const data = await res.json();
@@ -355,25 +359,56 @@ export default function TamilNaduLiveMap() {
     const key = meta ? meta.name : rawName;
     const data = districtData ? districtData[key] : null;
 
-    let fillColor = "#b8e6d5";
+    const isSelected = key === selectedDistrictKey && !pointInspection;
+
+    // Task 2 Weather Choropleth Specifications:
+    // NORMAL (Rain < 10mm, Temp < 38°C): Semi-transparent Green #10B98133 (Stroke #10B981)
+    // WATCH (Rain 10-30mm, Temp 38-40°C): Semi-transparent Blue/Teal #0284C733 (Stroke #0284C7)
+    // ALERT (Rain 30-70mm, Temp 40-42°C): Semi-transparent Amber #F59E0B44 (Stroke #F59E0B)
+    // CRITICAL (Rain > 70mm or active alert): Semi-transparent Red #EF444455 (Stroke #EF4444)
+
+    let fillColor = "#10B981";
+    let strokeColor = "#10B981";
+    let fillOpacity = 0.22;
+
     if (data) {
-      if (selectedMetric === "risk") {
-        fillColor = getRiskColor(data.riskLevel);
-      } else if (selectedMetric === "temp") {
+      const rain = Number(data.rain) || 0;
+      const temp = Number(data.temp) || 30;
+      const risk = data.riskLevel;
+
+      if (risk === "CRITICAL WARNING" || risk === "CRITICAL" || rain > 70 || temp >= 42) {
+        fillColor = "#EF4444";
+        strokeColor = "#EF4444";
+        fillOpacity = 0.35;
+      } else if (risk === "ALERT" || (rain >= 30 && rain <= 70) || (temp >= 40 && temp < 42)) {
+        fillColor = "#F59E0B";
+        strokeColor = "#F59E0B";
+        fillOpacity = 0.28;
+      } else if (risk === "WATCH" || (rain >= 10 && rain < 30) || (temp >= 38 && temp < 40)) {
+        fillColor = "#0284C7";
+        strokeColor = "#0284C7";
+        fillOpacity = 0.22;
+      } else {
+        fillColor = "#10B981";
+        strokeColor = "#10B981";
+        fillOpacity = 0.20;
+      }
+
+      if (selectedMetric === "temp") {
         fillColor = getTempColor(data.temp);
+        strokeColor = fillColor;
       } else if (selectedMetric === "rain") {
         fillColor = getRainColor(data.rain);
+        strokeColor = fillColor;
       }
     }
 
-    const isSelected = key === selectedDistrictKey && !pointInspection;
-
     return {
       fillColor,
-      weight: isSelected ? 3 : 1.5,
+      weight: isSelected ? 3.5 : 1.5,
       opacity: 1,
-      color: isSelected ? "#2A9D8F" : "#457B9D",
-      fillOpacity: selectedMetric === "rain" && data && data.rain === 0 ? 0.35 : 0.75,
+      color: isSelected ? "#00BFA6" : strokeColor,
+      fillOpacity: isSelected ? Math.min(0.85, fillOpacity + 0.35) : fillOpacity,
     };
   };
 
@@ -393,7 +428,7 @@ export default function TamilNaduLiveMap() {
 
     layer.on({
       mouseover: (e) => {
-        e.target.setStyle({ weight: 3, color: "#2A9D8F", fillOpacity: 0.9 });
+        e.target.setStyle({ weight: 3.5, color: "#00BFA6", fillOpacity: 0.65 });
       },
       mouseout: (e) => {
         if (geoJsonLayerRef.current) {
@@ -405,16 +440,25 @@ export default function TamilNaduLiveMap() {
         const lat = d ? d.lat : TN_DISTRICTS[key]?.lat;
         const lon = d ? d.lon : TN_DISTRICTS[key]?.lon;
         handleSelectDistrict(key, lat, lon);
+        logRecentActivity('VIEW_DISTRICT', `${key} Weather Scan`);
       },
     });
 
     if (districtData && districtData[key]) {
       const d = districtData[key];
+      const localizedRisk = d.riskLevel === 'CRITICAL WARNING' || d.riskLevel === 'CRITICAL'
+        ? t('criticalThreat')
+        : d.riskLevel === 'ALERT'
+        ? t('alertLevel')
+        : d.riskLevel === 'WATCH'
+        ? t('watchLevel')
+        : t('safeNormal');
+
       layer.bindTooltip(
         `<div style="font-family: Inter, sans-serif; font-size: 13px; line-height: 1.4; color: #2C3E50;">
-          <strong style="color: #2A9D8F; font-size: 14px;">${key}</strong><br/>
-          <span>Status: <b>${d.riskLevel}</b></span><br/>
-          Temp: <b>${d.temp}°C</b> | Rain: <b>${d.rain}mm</b>
+          <strong style="color: #2A9D8F; font-size: 14px;">${tDistrict(key)}</strong><br/>
+          <span>${language === 'ta' ? 'நிலை:' : 'Status:'} <b>${localizedRisk}</b></span><br/>
+          ${t('temperature')}: <b>${d.temp}°C</b> | ${t('rainfall')}: <b>${d.rain}mm</b>
         </div>`,
         { sticky: true }
       );
@@ -440,21 +484,21 @@ export default function TamilNaduLiveMap() {
       {/* HEADER BAR */}
       <header style={styles.header}>
         <div>
-          <h1 style={styles.title}>ClimaShield TN — Live GIS & Citizen DSS Platform</h1>
+          <h1 style={styles.title}>{language === 'ta' ? 'கிளைமாஷீல்ட் தமிழ்நாடு — நேரலை ஜிஐஎஸ் & குடிமக்கள் பாதுகாப்பு தளம்' : 'ClimaShield TN — Live GIS & Citizen DSS Platform'}</h1>
           <p style={styles.subtitle}>
-            38-District & Any-Town Precise Weather, Doppler Radar & Emergency Warning System
+            {language === 'ta' ? '38 மாவட்டங்கள் மற்றும் அனைத்து நகரங்களுக்கான துல்லிய வானிலை, டாப்ளர் ரேடார் & அவசரக்கால எச்சரிக்கை அமைப்பு' : '38-District & Any-Town Precise Weather, Doppler Radar & Emergency Warning System'}
           </p>
         </div>
 
         <div style={styles.headerActions}>
           <button style={styles.safeBtn} onClick={handleCheckMyLocation}>
-            <Navigation size={15} /> Check My Location
+            <Navigation size={15} /> {t('checkMyLocation')}
           </button>
           <button style={styles.reportBtn} onClick={() => setShowIncidentForm(true)}>
-            <FileText size={15} /> Report Incident
+            <FileText size={15} /> {t('navReport')}
           </button>
           <button style={styles.refreshBtn} onClick={() => refetch()}>
-            <RefreshCw size={14} /> Refresh
+            <RefreshCw size={14} /> {t('refresh')}
           </button>
         </div>
       </header>
@@ -462,24 +506,24 @@ export default function TamilNaduLiveMap() {
       {/* METRIC TOGGLES & RADAR SWITCH */}
       <div style={styles.controlsBar}>
         <div style={styles.metricGroup}>
-          <span style={styles.metricLabel}>Choropleth Layer:</span>
+          <span style={styles.metricLabel}>{t('choroplethLayer')}</span>
           <button
             style={selectedMetric === "risk" ? styles.metricActiveBtn : styles.metricBtn}
             onClick={() => { setSelectedMetric("risk"); setPointInspection(null); }}
           >
-            <Shield size={14} /> Disaster Threat
+            <Shield size={14} /> {t('disasterThreat')}
           </button>
           <button
             style={selectedMetric === "temp" ? styles.metricActiveBtn : styles.metricBtn}
             onClick={() => { setSelectedMetric("temp"); setPointInspection(null); }}
           >
-            <Thermometer size={14} /> Temperature
+            <Thermometer size={14} /> {t('temperature')}
           </button>
           <button
             style={selectedMetric === "rain" ? styles.metricActiveBtn : styles.metricBtn}
             onClick={() => { setSelectedMetric("rain"); setPointInspection(null); }}
           >
-            <CloudRain size={14} /> Rainfall
+            <CloudRain size={14} /> {t('rainfall')}
           </button>
         </div>
 
@@ -488,12 +532,12 @@ export default function TamilNaduLiveMap() {
             style={showRadar ? styles.radarActiveBtn : styles.radarBtn}
             onClick={() => setShowRadar(!showRadar)}
           >
-            <Radio size={14} /> Doppler Radar Overlay {showRadar ? "[ON]" : "[OFF]"}
+            <Radio size={14} /> {t('dopplerRadar')} {showRadar ? "[ON]" : "[OFF]"}
           </button>
 
           {lastUpdated && (
             <div style={styles.lastUpdatedText}>
-              Updated: {lastUpdated.toLocaleTimeString()} | Live Location Lock Active
+              {language === 'ta' ? 'புதுப்பிக்கப்பட்டது:' : 'Updated:'} {lastUpdated.toLocaleTimeString()} | {language === 'ta' ? 'நேரலை இருப்பிடப் பூட்டு செயலில் உள்ளது' : 'Live Location Lock Active'}
             </div>
           )}
         </div>
@@ -501,7 +545,7 @@ export default function TamilNaduLiveMap() {
 
       {/* MAJOR URBAN HUBS QUICK ACCESS (TOP RIBBON ONLY - CANVAS IS CLEAN) */}
       <section style={styles.hubSection}>
-        <h3 style={styles.hubTitle}>Major Urban Hub Quick-Access (Top Navigation Ribbon)</h3>
+        <h3 style={styles.hubTitle}>{t('urbanHubQuickAccess')}</h3>
         <div style={styles.hubGrid}>
           {MAJOR_CITIES.map((cityName) => {
             const data = districtData ? districtData[cityName] : null;
@@ -524,17 +568,23 @@ export default function TamilNaduLiveMap() {
                 }
               >
                 <div style={styles.hubCardHeader}>
-                  <strong style={styles.hubCityName}>{cityName}</strong>
+                  <strong style={styles.hubCityName}>{tDistrict(cityName)}</strong>
                   {data && (
                     <span style={{ ...styles.miniBadge, backgroundColor: bStyle.bg, color: bStyle.text }}>
-                      {data.riskLevel}
+                      {data.riskLevel === 'CRITICAL WARNING' || data.riskLevel === 'CRITICAL'
+                        ? t('criticalThreat')
+                        : data.riskLevel === 'ALERT'
+                        ? t('alertLevel')
+                        : data.riskLevel === 'WATCH'
+                        ? t('watchLevel')
+                        : t('safeNormal')}
                     </span>
                   )}
                 </div>
                 {data ? (
                   <div style={styles.hubMetrics}>
-                    <span>Temp: {data.temp}°C</span>
-                    <span>Rain: {data.rain}mm</span>
+                    <span>{t('temperature')}: {data.temp}°C</span>
+                    <span>{t('rainfall')}: {data.rain}mm</span>
                   </div>
                 ) : (
                   <span style={{ fontSize: "12px", color: "#6B8E9F" }}>Loading...</span>
@@ -551,7 +601,7 @@ export default function TamilNaduLiveMap() {
         <div style={styles.mapWrapper}>
           {inspectLoading && (
             <div style={styles.mapOverlayLoader}>
-              <span>Fetching Live Weather for Exact Coordinates...</span>
+              <span>{t('fetchingLiveWeather')}</span>
             </div>
           )}
 
@@ -588,7 +638,7 @@ export default function TamilNaduLiveMap() {
               <Marker position={[userLocation.lat, userLocation.lon]} icon={userLocationIcon}>
                 <Popup>
                   <div style={{ fontFamily: 'Inter, sans-serif', fontSize: '13px' }}>
-                    <strong style={{ color: '#2a9d8f' }}>Your Current Location</strong><br />
+                    <strong style={{ color: '#2a9d8f' }}>{t('yourDetectedLocation')}</strong><br />
                     <span>Lat: {userLocation.lat.toFixed(4)}°, Lon: {userLocation.lon.toFixed(4)}°</span>
                   </div>
                 </Popup>
@@ -600,11 +650,11 @@ export default function TamilNaduLiveMap() {
               <Marker position={inspectMarker} icon={pinIcon}>
                 <Popup>
                   <div style={{ fontFamily: 'Inter, sans-serif', fontSize: '13px' }}>
-                    <strong style={{ color: '#e76f51' }}>{pointInspection?.name || 'Inspected Point'}</strong><br />
+                    <strong style={{ color: '#e76f51' }}>{pointInspection?.name ? tDistrict(pointInspection.name) : t('pointTelemetry')}</strong><br />
                     <span>Lat: {inspectMarker[0].toFixed(4)}, Lon: {inspectMarker[1].toFixed(4)}</span><br />
                     {pointInspection && (
                       <>
-                        Temp: <b>{pointInspection.temp}°C</b> | Rain: <b>{pointInspection.rain}mm</b>
+                        {t('temperature')}: <b>{pointInspection.temp}°C</b> | {t('rainfall')}: <b>{pointInspection.rain}mm</b>
                       </>
                     )}
                   </div>
@@ -617,8 +667,8 @@ export default function TamilNaduLiveMap() {
               <Marker key={inc.id} position={[inc.lat, inc.lon]} icon={incidentIcon}>
                 <Popup>
                   <div style={{ fontFamily: 'Inter, sans-serif', fontSize: '13px' }}>
-                    <strong style={{ color: '#e76f51' }}>Citizen Report ({inc.hazard_type})</strong><br />
-                    <span>District: <b>{inc.district}</b></span><br />
+                    <strong style={{ color: '#e76f51' }}>{t('reportHeading')} ({inc.hazard_type})</strong><br />
+                    <span>{t('profileLocation')}: <b>{tDistrict(inc.district)}</b></span><br />
                     <p style={{ margin: '4px 0 0 0', fontSize: '12px', color: '#555' }}>{inc.description}</p>
                   </div>
                 </Popup>
@@ -630,29 +680,29 @@ export default function TamilNaduLiveMap() {
 
           {/* MAP LEGEND */}
           <div style={styles.legendOverlay}>
-            <div style={styles.legendTitle}>Legend ({selectedMetric.toUpperCase()})</div>
+            <div style={styles.legendTitle}>{t('choroplethLayer')} ({selectedMetric === 'risk' ? t('disasterThreat') : selectedMetric === 'temp' ? t('temperature') : t('rainfall')})</div>
             {selectedMetric === "risk" && (
               <div style={styles.legendItems}>
-                <div><span style={{ ...styles.legendDot, backgroundColor: "#2a9d8f" }} /> Normal</div>
-                <div><span style={{ ...styles.legendDot, backgroundColor: "#457b9d" }} /> Watch</div>
-                <div><span style={{ ...styles.legendDot, backgroundColor: "#f4a261" }} /> Alert</div>
-                <div><span style={{ ...styles.legendDot, backgroundColor: "#e76f51" }} /> Critical Warning</div>
+                <div><span style={{ ...styles.legendDot, backgroundColor: "#10b981" }} /> {t('safeNormal')} (Rain &lt; 10mm, Temp &lt; 38°C)</div>
+                <div><span style={{ ...styles.legendDot, backgroundColor: "#0284c7" }} /> {t('watchLevel')} (Rain 10-30mm, Temp 38-40°C)</div>
+                <div><span style={{ ...styles.legendDot, backgroundColor: "#f59e0b" }} /> {t('alertLevel')} (Rain 30-70mm, Temp 40-42°C)</div>
+                <div><span style={{ ...styles.legendDot, backgroundColor: "#ef4444" }} /> {t('criticalThreat')} (Rain &gt; 70mm / Advisory)</div>
               </div>
             )}
             {selectedMetric === "temp" && (
               <div style={styles.legendItems}>
-                <div><span style={{ ...styles.legendDot, backgroundColor: "#2a9d8f" }} /> &lt;26°C (Cool)</div>
+                <div><span style={{ ...styles.legendDot, backgroundColor: "#2a9d8f" }} /> &lt;26°C ({language === 'ta' ? 'குளிர்ச்சி' : 'Cool'})</div>
                 <div><span style={{ ...styles.legendDot, backgroundColor: "#ffd97d" }} /> 26-32°C</div>
                 <div><span style={{ ...styles.legendDot, backgroundColor: "#f4a261" }} /> 33-38°C</div>
-                <div><span style={{ ...styles.legendDot, backgroundColor: "#e76f51" }} /> &gt;38°C (Heatwave)</div>
+                <div><span style={{ ...styles.legendDot, backgroundColor: "#e76f51" }} /> &gt;38°C ({language === 'ta' ? 'வெப்ப அலை' : 'Heatwave'})</div>
               </div>
             )}
             {selectedMetric === "rain" && (
               <div style={styles.legendItems}>
-                <div><span style={{ ...styles.legendDot, backgroundColor: "#f8fffe" }} /> 0mm (Dry)</div>
-                <div><span style={{ ...styles.legendDot, backgroundColor: "#a8dadc" }} /> 1-15mm (Light)</div>
-                <div><span style={{ ...styles.legendDot, backgroundColor: "#00bfa6" }} /> 15-50mm (Heavy)</div>
-                <div><span style={{ ...styles.legendDot, backgroundColor: "#457b9d" }} /> &gt;50mm (Severe)</div>
+                <div><span style={{ ...styles.legendDot, backgroundColor: "#f8fffe" }} /> 0mm ({language === 'ta' ? 'வறட்சி' : 'Dry'})</div>
+                <div><span style={{ ...styles.legendDot, backgroundColor: "#a8dadc" }} /> 1-15mm ({language === 'ta' ? 'லேசான மழை' : 'Light'})</div>
+                <div><span style={{ ...styles.legendDot, backgroundColor: "#00bfa6" }} /> 15-50mm ({language === 'ta' ? 'கனமழை' : 'Heavy'})</div>
+                <div><span style={{ ...styles.legendDot, backgroundColor: "#457b9d" }} /> &gt;50mm ({language === 'ta' ? 'அதிதீவிரம்' : 'Severe'})</div>
               </div>
             )}
           </div>
@@ -664,18 +714,24 @@ export default function TamilNaduLiveMap() {
             <div>
               <div style={styles.drawerHeader}>
                 <div>
-                  <h2 style={styles.districtName}>{activeInspection.name}</h2>
+                  <h2 style={styles.districtName}>{tDistrict(activeInspection.name)}</h2>
                   <span style={styles.zoneText}>
                     {activeInspection.isPoint
-                      ? `Point Telemetry (${activeInspection.lat.toFixed(3)}, ${activeInspection.lng.toFixed(3)})`
-                      : activeInspection.zone}
+                      ? `${t('pointTelemetry')} (${activeInspection.lat.toFixed(3)}, ${activeInspection.lng.toFixed(3)})`
+                      : tZone(activeInspection.zone)}
                   </span>
                 </div>
                 {(() => {
                   const bStyle = getBadgeStyle(activeInspection.riskLevel);
                   return (
                     <span style={{ ...styles.statusPill, backgroundColor: bStyle.bg, color: bStyle.text }}>
-                      [{activeInspection.riskLevel}]
+                      [{activeInspection.riskLevel === 'CRITICAL WARNING' || activeInspection.riskLevel === 'CRITICAL'
+                        ? t('criticalThreat')
+                        : activeInspection.riskLevel === 'ALERT'
+                        ? t('alertLevel')
+                        : activeInspection.riskLevel === 'WATCH'
+                        ? t('watchLevel')
+                        : t('safeNormal')}]
                     </span>
                   );
                 })()}
@@ -685,52 +741,52 @@ export default function TamilNaduLiveMap() {
                 <AlertTriangle size={20} color="#2A9D8F" />
                 <div>
                   <strong style={{ color: "#2C3E50", fontSize: "14px" }}>
-                    Primary Threat Assessment
+                    {t('primaryThreatAssessment')}
                   </strong>
                   <p style={{ color: "#6B8E9F", fontSize: "13px", margin: "2px 0 0 0" }}>
-                    {activeInspection.hazard}
+                    {tHazard(activeInspection.hazard)}
                   </p>
                 </div>
               </div>
 
               <div style={styles.statsGrid}>
                 <div style={styles.statCard}>
-                  <span style={styles.statLabel}>Temperature</span>
+                  <span style={styles.statLabel}>{t('temperatureLabel')}</span>
                   <strong style={styles.statValue}>{activeInspection.temp} °C</strong>
                 </div>
 
                 <div style={styles.statCard}>
-                  <span style={styles.statLabel}>Precipitation</span>
+                  <span style={styles.statLabel}>{t('precipitationLabel')}</span>
                   <strong style={styles.statValue}>{activeInspection.rain} mm</strong>
                 </div>
 
                 <div style={styles.statCard}>
-                  <span style={styles.statLabel}>Wind Speed</span>
+                  <span style={styles.statLabel}>{t('windSpeedLabel')}</span>
                   <strong style={styles.statValue}>{activeInspection.wind} km/h</strong>
                 </div>
 
                 <div style={styles.statCard}>
-                  <span style={styles.statLabel}>Humidity</span>
+                  <span style={styles.statLabel}>{t('humidityLabel')}</span>
                   <strong style={styles.statValue}>{activeInspection.humidity} %</strong>
                 </div>
               </div>
 
               <div style={styles.guidanceBox}>
                 <h4 style={{ margin: "0 0 6px 0", fontSize: "13px", color: "#2A9D8F", display: "flex", alignItems: "center", gap: "6px" }}>
-                  <CheckCircle size={15} /> Emergency Safety Verdict
+                  <CheckCircle size={15} /> {t('emergencySafetyVerdict')}
                 </h4>
                 <p style={{ margin: 0, fontSize: "12px", color: "#2C3E50", lineHeight: "1.4" }}>
                   {activeInspection.riskLevel === "CRITICAL WARNING"
-                    ? "HIGH HAZARD VERDICT: Move to higher ground or seek shelter immediately. Monitor NDRF emergency channels."
+                    ? t('criticalVerdictMsg')
                     : activeInspection.riskLevel === "ALERT"
-                    ? "ELEVATED RISK VERDICT: Prepare emergency kit, restrict travel through floodprone roads."
-                    : "SAFE VERDICT: Conditions normal at this location. Continue routine weather tracking."}
+                    ? t('alertVerdictMsg')
+                    : t('safeVerdictMsg')}
                 </p>
               </div>
             </div>
           ) : (
             <div style={styles.emptyDrawer}>
-              <span>Click ANY town or spot on the map to inspect live weather & threat score</span>
+              <span>{t('emptyDrawerText')}</span>
             </div>
           )}
         </aside>
@@ -741,16 +797,16 @@ export default function TamilNaduLiveMap() {
         <div style={styles.modalBackdrop}>
           <div style={styles.modalCard}>
             <h3 style={{ margin: '0 0 12px 0', color: '#457B9D', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <FileText size={20} /> Submit Community Incident Report
+              <FileText size={20} /> {t('submitCommunityReport')}
             </h3>
             <p style={{ fontSize: '13px', color: '#6B8E9F', marginBottom: '16px' }}>
-              Mark location on map first, then fill details below to alert emergency teams:
+              {t('markLocationFirst')}
             </p>
             <form onSubmit={handleSubmitIncident}>
               <div style={{ marginBottom: '12px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
                   <label style={{ fontSize: '12px', fontWeight: 600, color: '#2C3E50' }}>
-                    Location (GPS / Map)
+                    {t('locationLabel')}
                   </label>
                   <button
                     type="button"
@@ -769,17 +825,17 @@ export default function TamilNaduLiveMap() {
                       fontWeight: 600,
                     }}
                   >
-                    <Crosshair size={12} /> Fetch Current Location (GPS)
+                    <Crosshair size={12} /> {t('fetchGpsButton')}
                   </button>
                 </div>
                 <div style={{ fontSize: '11px', color: '#6B8E9F', background: '#f8fffe', padding: '6px 10px', borderRadius: '6px', border: '1px solid #b8e6d5' }}>
-                  {inspectMarker ? `Lat: ${inspectMarker[0].toFixed(4)}, Lon: ${inspectMarker[1].toFixed(4)}` : `Default (${selectedDistrictKey} Center)`}
+                  {inspectMarker ? `Lat: ${inspectMarker[0].toFixed(4)}, Lon: ${inspectMarker[1].toFixed(4)}` : `${language === 'ta' ? 'இயல்புநிலை' : 'Default'} (${tDistrict(selectedDistrictKey)} ${t('districtSuffix')})`}
                 </div>
               </div>
 
               <div style={{ marginBottom: '12px' }}>
                 <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, marginBottom: '4px', color: '#2C3E50' }}>
-                  District
+                  {t('districtLabel')}
                 </label>
                 <select
                   style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #b8e6d5', background: '#f8fffe', color: '#2c3e50' }}
@@ -787,35 +843,35 @@ export default function TamilNaduLiveMap() {
                   onChange={(e) => setSelectedDistrictKey(e.target.value)}
                 >
                   {MAJOR_CITIES.map((c) => (
-                    <option key={c} value={c}>{c}</option>
+                    <option key={c} value={c}>{tDistrict(c)}</option>
                   ))}
                 </select>
               </div>
 
               <div style={{ marginBottom: '12px' }}>
                 <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, marginBottom: '4px', color: '#2C3E50' }}>
-                  Hazard Type
+                  {t('hazardCategoryLabel')}
                 </label>
                 <select
                   style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #b8e6d5', background: '#f8fffe', color: '#2c3e50' }}
                   value={newIncident.hazard_type}
                   onChange={(e) => setNewIncident({ ...newIncident, hazard_type: e.target.value })}
                 >
-                  <option value="Severe Urban Inundation / Waterlogging">Severe Urban Inundation / Waterlogging</option>
-                  <option value="Impassable Roadway / Bridge Submerged">Impassable Roadway / Bridge Submerged</option>
-                  <option value="Fallen Electric Pole / Wire Hazard">Fallen Electric Pole / Wire Hazard</option>
-                  <option value="Extreme Heatwave / Heatstroke Risk">Extreme Heatwave / Heatstroke Risk</option>
-                  <option value="Other Emergency / Structural Hazard">Other Emergency / Structural Hazard</option>
+                  <option value="Severe Urban Inundation / Waterlogging">{t('catInundation')}</option>
+                  <option value="Impassable Roadway / Submerged Bridge">{t('catImpassable')}</option>
+                  <option value="Fallen Electric Pole / Wire Hazard">{t('catFallenPole')}</option>
+                  <option value="Extreme Heatwave / Heatstroke Risk">{t('catHeatwave')}</option>
+                  <option value="Other Emergency / Structural Hazard">{t('catOther')}</option>
                 </select>
               </div>
 
               <div style={{ marginBottom: '16px' }}>
                 <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, marginBottom: '4px', color: '#2C3E50' }}>
-                  Incident Description
+                  {t('descriptionLabel')}
                 </label>
                 <textarea
                   style={{ width: '100%', padding: '8px', borderRadius: '6px', border: '1px solid #b8e6d5', minHeight: '70px', background: '#f8fffe', color: '#2c3e50' }}
-                  placeholder="Describe damage, water level height, or assistance required..."
+                  placeholder={t('descriptionPlaceholder')}
                   value={newIncident.description}
                   onChange={(e) => setNewIncident({ ...newIncident, description: e.target.value })}
                   required
@@ -828,13 +884,13 @@ export default function TamilNaduLiveMap() {
                   style={{ padding: '8px 16px', background: '#e8f4f8', border: '1px solid #a8dadc', borderRadius: '6px', cursor: 'pointer', fontWeight: 600, color: '#2c3e50' }}
                   onClick={() => setShowIncidentForm(false)}
                 >
-                  Cancel
+                  {t('cancel')}
                 </button>
                 <button
                   type="submit"
                   style={{ padding: '8px 16px', background: 'linear-gradient(135deg, #00bfa6, #2a9d8f)', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 600 }}
                 >
-                  Submit Report
+                  {t('submitReportButton')}
                 </button>
               </div>
             </form>

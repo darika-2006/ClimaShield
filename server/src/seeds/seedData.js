@@ -20,6 +20,8 @@ const SHELTERS = [
   { districtName: 'Chennai', name: 'Tambaram Evacuation Shelter', capacity: 850, current_occupancy: 120, lat: 12.9229, lon: 80.1275, contact_phone: '+91-44-22265001' },
   { districtName: 'Cuddalore', name: 'Cuddalore Port Coastal Cyclone Center', capacity: 1000, current_occupancy: 200, lat: 11.7510, lon: 79.7680, contact_phone: '+91-4142-230100' },
   { districtName: 'Thoothukudi', name: 'VOC Port Disaster Relief Center, Thoothukudi', capacity: 900, current_occupancy: 150, lat: 8.7580, lon: 78.1420, contact_phone: '+91-461-2352201' },
+  { districtName: 'Thoothukudi', name: 'Kovilpatti Municipal High-Ground Camp', capacity: 850, current_occupancy: 120, lat: 9.1750, lon: 77.8720, contact_phone: '+91-4632-220101' },
+  { districtName: 'Thoothukudi', name: 'Thoothukudi Flood Relief Center', capacity: 1100, current_occupancy: 230, lat: 8.8050, lon: 78.1400, contact_phone: '+91-461-2320102' },
   { districtName: 'Madurai', name: 'Madurai Corporation Central Relief Camp, Tallakulam', capacity: 1200, current_occupancy: 180, lat: 9.9320, lon: 78.1360, contact_phone: '+91-452-2531001' },
   { districtName: 'Madurai', name: 'Vaigai River Basin High-Ground Relief Hub, Arapalayam', capacity: 950, current_occupancy: 110, lat: 9.9380, lon: 78.1060, contact_phone: '+91-452-2532002' },
   { districtName: 'Coimbatore', name: 'Coimbatore North Community Relief Campus', capacity: 1100, current_occupancy: 220, lat: 11.0250, lon: 76.9600, contact_phone: '+91-422-2300101' },

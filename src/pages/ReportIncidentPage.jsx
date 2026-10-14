@@ -4,6 +4,7 @@ import { styled } from '../stitches.config';
 import { Button } from '../components/Button';
 import { FileText, MapPin, AlertTriangle, CheckCircle, Crosshair, Send, Upload, X, Eye, ShieldCheck, Search } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 
 const Container = styled('div', {
   minHeight: 'calc(100vh - 72px)',
@@ -204,6 +205,7 @@ const SuggestionItem = styled('div', {
 export default function ReportIncidentPage() {
   const navigate = useNavigate();
   const { isOfficer } = useAuth();
+  const { t, tDistrict, language } = useLanguage();
   const [activeTab, setActiveTab] = useState('SUBMIT'); // 'SUBMIT' | 'REVIEW'
 
   // Location Autocomplete State
@@ -426,10 +428,10 @@ export default function ReportIncidentPage() {
           <div>
             <Title>
               <FileText size={28} color="#2A9D8F" />
-              Citizen Emergency Incident Report
+              {t('reportHeading')}
             </Title>
             <Subtitle>
-              Submit real-time disaster, inundation, or infrastructure hazard reports with location autocomplete and photo proofs.
+              {t('reportSubtitle')}
             </Subtitle>
           </div>
 
@@ -448,7 +450,7 @@ export default function ReportIncidentPage() {
                   cursor: 'pointer',
                 }}
               >
-                Submit Form
+                {language === 'ta' ? 'படிவத்தைச் சமர்ப்பி' : 'Submit Form'}
               </button>
               <button
                 onClick={() => setActiveTab('REVIEW')}
@@ -466,7 +468,7 @@ export default function ReportIncidentPage() {
                   gap: '4px',
                 }}
               >
-                <ShieldCheck size={14} /> Reviewer Desk
+                <ShieldCheck size={14} /> {language === 'ta' ? 'சரிபார்ப்பாளர் மையம்' : 'Reviewer Desk'}
               </button>
             </div>
           )}
@@ -475,14 +477,14 @@ export default function ReportIncidentPage() {
         {activeTab === 'REVIEW' ? (
           <div>
             <h3 style={{ fontSize: '16px', color: '#2c3e50', marginBottom: '16px', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <ShieldCheck size={20} color="#2a9d8f" /> Pending Field Incident Verification Desk
+              <ShieldCheck size={20} color="#2a9d8f" /> {language === 'ta' ? 'நிலுவையில் உள்ள கள சம்பவ சரிபார்ப்பு மையம்' : 'Pending Field Incident Verification Desk'}
             </h3>
 
             {loadingPending ? (
-              <div style={{ padding: '30px', textAlign: 'center', color: '#6b8e9f' }}>Loading review queue...</div>
+              <div style={{ padding: '30px', textAlign: 'center', color: '#6b8e9f' }}>{language === 'ta' ? 'சரிபார்ப்பு வரிசை ஏற்றப்படுகிறது...' : 'Loading review queue...'}</div>
             ) : pendingReports.length === 0 ? (
               <div style={{ padding: '30px', textAlign: 'center', background: '#e6f4f1', borderRadius: '12px', color: '#2a9d8f', fontWeight: '600', fontSize: '14px' }}>
-                All clear! No unverified citizen hazard reports pending review.
+                {language === 'ta' ? 'சரிபார்ப்பிற்கு நிலுவையில் உள்ள குடிமக்கள் பேரிடர் புகார்கள் எதுவும் இல்லை.' : 'All clear! No unverified citizen hazard reports pending review.'}
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -493,7 +495,7 @@ export default function ReportIncidentPage() {
                         <span style={{ background: '#2a9d8f', color: '#ffffff', fontSize: '10px', fontWeight: '800', padding: '3px 8px', borderRadius: '12px', textTransform: 'uppercase' }}>
                           {report.hazard_type}
                         </span>
-                        <span style={{ fontWeight: '700', fontSize: '14px', color: '#2c3e50' }}>{report.district}</span>
+                        <span style={{ fontWeight: '700', fontSize: '14px', color: '#2c3e50' }}>{tDistrict(report.district)}</span>
                       </div>
                       <span style={{ fontSize: '11px', color: '#6b8e9f' }}>GPS: {parseFloat(report.lat || 0).toFixed(4)}°, {parseFloat(report.lon || 0).toFixed(4)}°</span>
                     </div>
@@ -513,13 +515,13 @@ export default function ReportIncidentPage() {
                         onClick={() => handleVerifyReport(report.id, 'REJECTED')}
                         style={{ background: '#fff0f0', border: '1px solid #f08080', color: '#e76f51', padding: '6px 14px', borderRadius: '8px', fontWeight: '700', fontSize: '12px', cursor: 'pointer' }}
                       >
-                        Reject Report
+                        {t('reject')}
                       </button>
                       <button
                         onClick={() => handleVerifyReport(report.id, 'VERIFIED_ACTIVE')}
                         style={{ background: 'linear-gradient(135deg, #00bfa6, #2a9d8f)', border: 'none', color: '#ffffff', padding: '6px 16px', borderRadius: '8px', fontWeight: '700', fontSize: '12px', cursor: 'pointer' }}
                       >
-                        Approve & Broadcast
+                        {t('verifyAndBroadcast')}
                       </button>
                     </div>
                   </div>
@@ -531,16 +533,16 @@ export default function ReportIncidentPage() {
           <div style={{ background: '#e6f4f1', border: '1px solid #b8e6d5', borderRadius: '16px', padding: '32px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
             <CheckCircle size={48} color="#2a9d8f" />
             <h3 style={{ margin: 0, color: '#2a9d8f', fontSize: '20px', fontWeight: 800 }}>
-              Incident Report Transmitted Successfully
+              {language === 'ta' ? 'சம்பவ அறிக்கை வெற்றிகரமாக அனுப்பப்பட்டது' : 'Incident Report Transmitted Successfully'}
             </h3>
             <p style={{ margin: 0, fontSize: '14px', color: '#2c3e50' }}>
-              Report Reference ID: <b>#{submittedData.id}</b> • Location: <b>{submittedData.district}</b>
+              {language === 'ta' ? 'அறிக்கை குறிப்பு எண்:' : 'Report Reference ID:'} <b>#{submittedData.id}</b> • {language === 'ta' ? 'இடம்:' : 'Location:'} <b>{tDistrict(submittedData.district)}</b>
             </p>
             <p style={{ margin: 0, fontSize: '13px', color: '#6b8e9f' }}>
-              Your report has been recorded in the PostGIS database and forwarded to TNSDMA teams for ground verification.
+              {language === 'ta' ? 'உங்கள் அறிக்கை PostGIS தரவுத்தளத்தில் பதிவு செய்யப்பட்டு, கள சரிபார்ப்பிற்காக TNSDMA குழுக்களுக்கு அனுப்பப்பட்டுள்ளது.' : 'Your report has been recorded in the PostGIS database and forwarded to TNSDMA teams for ground verification.'}
             </p>
             <div style={{ display: 'flex', gap: '12px', marginTop: '12px' }}>
-              <Button onClick={() => navigate('/')}>View on Live GIS Map</Button>
+              <Button onClick={() => navigate('/')}>{language === 'ta' ? 'நேரலை வரைபடத்தில் காண்க' : 'View on Live GIS Map'}</Button>
               <Button
                 variant="secondary"
                 onClick={() => {
@@ -549,7 +551,7 @@ export default function ReportIncidentPage() {
                   setPhotoDataUrl('');
                 }}
               >
-                Submit Another Report
+                {language === 'ta' ? 'மற்றொரு அறிக்கையைச் சமர்ப்பிக்கவும்' : 'Submit Another Report'}
               </Button>
             </div>
           </div>
@@ -558,12 +560,12 @@ export default function ReportIncidentPage() {
             {/* Task 2A: Location Autocomplete Input */}
             <FormGroup>
               <Label>
-                <MapPin size={18} color="#2A9D8F" /> Location Search (OpenStreetMap Nominatim Autocomplete)
+                <MapPin size={18} color="#2A9D8F" /> {t('locationSearchLabel')}
               </Label>
               <div style={{ position: 'relative' }}>
                 <Input
                   type="text"
-                  placeholder="Type area, city or village name (e.g., Kovilpatti, Kovilambakkam, Tenkasi)..."
+                  placeholder={language === 'ta' ? 'பகுதி, நகரம் அல்லது கிராமத்தின் பெயரைத் தட்டச்சு செய்க (எ.கா. கோவில்பட்டி, தென்காசி)...' : 'Type area, city or village name (e.g., Kovilpatti, Kovilambakkam, Tenkasi)...'}
                   value={locationQuery}
                   onChange={handleQueryChange}
                   required={!useCustomLandmark}
@@ -572,7 +574,7 @@ export default function ReportIncidentPage() {
 
                 {isSearchingLocation && (
                   <div style={{ position: 'absolute', right: '40px', top: '12px', fontSize: '11px', color: '#2a9d8f' }}>
-                    Searching...
+                    {language === 'ta' ? 'தேடுகிறது...' : 'Searching...'}
                   </div>
                 )}
 
@@ -597,7 +599,7 @@ export default function ReportIncidentPage() {
                   onChange={(e) => setUseCustomLandmark(e.target.checked)}
                 />
                 <label htmlFor="customToggle" style={{ fontSize: '13px', color: '#2c3e50', cursor: 'pointer', fontWeight: '500' }}>
-                  Specify Custom Landmark / Other Area
+                  {t('customPlaceCheckbox')}
                 </label>
               </div>
 
@@ -605,7 +607,7 @@ export default function ReportIncidentPage() {
                 <div style={{ marginTop: '8px' }}>
                   <Input
                     type="text"
-                    placeholder="Enter custom landmark or specific area name..."
+                    placeholder={language === 'ta' ? 'தனித்துவ அடையாளம் அல்லது குறிப்பிட்ட பகுதி பெயரை உள்ளிடவும்...' : 'Enter custom landmark or specific area name...'}
                     value={customLandmark}
                     onChange={(e) => setCustomLandmark(e.target.value)}
                     required
@@ -617,36 +619,36 @@ export default function ReportIncidentPage() {
             {/* Incident Category */}
             <FormGroup>
               <Label>
-                <AlertTriangle size={18} color="#2A9D8F" /> Hazard / Incident Category
+                <AlertTriangle size={18} color="#2A9D8F" /> {t('hazardCategoryLabel')}
               </Label>
               <Select value={hazardType} onChange={(e) => setHazardType(e.target.value)}>
-                <option value="Severe Urban Inundation / Waterlogging">Severe Urban Inundation / Waterlogging</option>
-                <option value="Impassable Roadway / Bridge Submerged">Impassable Roadway / Bridge Submerged</option>
-                <option value="Fallen Electric Pole / Wire Hazard">Fallen Electric Pole / Wire Hazard</option>
-                <option value="Extreme Heatwave / Heatstroke Risk">Extreme Heatwave / Heatstroke Risk</option>
-                <option value="Other Emergency / Structural Hazard">Other Emergency / Structural Hazard</option>
+                <option value="Severe Urban Inundation / Waterlogging">{t('catInundation')}</option>
+                <option value="Impassable Roadway / Bridge Submerged">{t('catImpassable')}</option>
+                <option value="Fallen Electric Pole / Wire Hazard">{t('catFallenPole')}</option>
+                <option value="Extreme Heatwave / Heatstroke Risk">{t('catHeatwave')}</option>
+                <option value="Other Emergency / Structural Hazard">{t('catOther')}</option>
               </Select>
             </FormGroup>
 
             {/* GPS Coordinates & Fetch Button */}
             <FormGroup>
               <Label>
-                <Crosshair size={18} color="#2A9D8F" /> Geolocation Coordinates (GPS)
+                <Crosshair size={18} color="#2A9D8F" /> {t('coordinatesLabel')}
               </Label>
               <GPSBox>
                 <GPSButton type="button" onClick={handleFetchGPSLocation} disabled={isLocating}>
                   <Crosshair size={16} />
-                  {isLocating ? 'Acquiring GPS Signal...' : 'Fetch Current Location (GPS)'}
+                  {isLocating ? (language === 'ta' ? 'ஜிபிஎஸ் சிக்னல் பெறப்படுகிறது...' : 'Acquiring GPS Signal...') : t('fetchGpsButton')}
                 </GPSButton>
               </GPSBox>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '8px' }}>
                 <div>
-                  <span style={{ fontSize: '11px', color: '#6b8e9f', fontWeight: 600 }}>Latitude</span>
+                  <span style={{ fontSize: '11px', color: '#6b8e9f', fontWeight: 600 }}>{language === 'ta' ? 'அட்சரேகை (Latitude)' : 'Latitude'}</span>
                   <Input type="number" step="any" value={lat} onChange={(e) => setLat(e.target.value)} required />
                 </div>
                 <div>
-                  <span style={{ fontSize: '11px', color: '#6b8e9f', fontWeight: 600 }}>Longitude</span>
+                  <span style={{ fontSize: '11px', color: '#6b8e9f', fontWeight: 600 }}>{language === 'ta' ? 'தீர்க்கரேகை (Longitude)' : 'Longitude'}</span>
                   <Input type="number" step="any" value={lon} onChange={(e) => setLon(e.target.value)} required />
                 </div>
               </div>
@@ -655,7 +657,7 @@ export default function ReportIncidentPage() {
             {/* Task 2B: Photo Upload & Preview */}
             <FormGroup>
               <Label>
-                <Upload size={18} color="#2A9D8F" /> Upload Incident Photo Proof
+                <Upload size={18} color="#2A9D8F" /> {t('incidentPhotoLabel')}
               </Label>
               <div style={{ background: '#f8fffe', border: '1px dashed #a8dadc', borderRadius: '12px', padding: '16px', textAlign: 'center' }}>
                 <input
@@ -681,7 +683,7 @@ export default function ReportIncidentPage() {
                     cursor: 'pointer',
                   }}
                 >
-                  <Upload size={16} /> Select Photo or Camera Capture (&lt; 5MB)
+                  <Upload size={16} /> {language === 'ta' ? 'புகைப்படத்தைத் தேர்வுசெய்க அல்லது கேமராவைப் பயன்படுத்தவும் (< 5MB)' : 'Select Photo or Camera Capture (< 5MB)'}
                 </label>
 
                 {photoDataUrl && (
@@ -689,6 +691,7 @@ export default function ReportIncidentPage() {
                     <img src={photoDataUrl} alt="Preview" style={{ maxHeight: '150px', borderRadius: '8px', border: '1px solid #b8e6d5' }} />
                     <button
                       type="button"
+                      title={t('removePhoto')}
                       onClick={() => setPhotoDataUrl('')}
                       style={{
                         position: 'absolute',
@@ -716,10 +719,10 @@ export default function ReportIncidentPage() {
             {/* Description */}
             <FormGroup>
               <Label>
-                <FileText size={18} color="#2A9D8F" /> Field Observations & Emergency Notes
+                <FileText size={18} color="#2A9D8F" /> {t('descriptionLabel')}
               </Label>
               <Textarea
-                placeholder="Provide specific details regarding inundation depth, road blockage, structural damage, or emergency assistance required..."
+                placeholder={t('descriptionPlaceholder')}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 required
@@ -728,7 +731,7 @@ export default function ReportIncidentPage() {
 
             <SubmitBtn type="submit" disabled={isSubmitting}>
               <Send size={18} />
-              {isSubmitting ? 'TRANSMITTING REPORT TO EMERGENCY DATABASE...' : 'SUBMIT INCIDENT REPORT'}
+              {isSubmitting ? t('submittingReportButton') : t('submitReportButton')}
             </SubmitBtn>
           </Form>
         )}

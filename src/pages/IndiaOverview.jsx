@@ -3,6 +3,7 @@ import IndiaChoroplethMap from '../components/IndiaChoroplethMap';
 import { Card } from '../components/Card';
 import { useState, useEffect } from 'react';
 import { Thermometer, CloudRain, Wind, MapPin, RefreshCw, Globe } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 
 const TooltipContainer = styled(Card, {
   position: 'fixed',
@@ -215,6 +216,7 @@ const getLevel = (temp) => {
 };
 
 const IndiaOverview = () => {
+  const { t, tDistrict, language } = useLanguage();
   const [metric, setMetric] = useState('temp');
   const [tooltip, setTooltip] = useState(null);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
@@ -285,37 +287,37 @@ const IndiaOverview = () => {
 
       <Sidebar>
         <SidebarTitle>
-          <Globe size={22} color="#457B9D" /> Weather Monitor
+          <Globe size={22} color="#457B9D" /> {language === 'ta' ? 'வானிலை கண்காணிப்பகம்' : 'Weather Monitor'}
         </SidebarTitle>
 
         <MetricToggle>
           <MetricBtn active={metric === 'temp'} onClick={() => setMetric('temp')}>
-            <Thermometer size={16} /> Temp
+            <Thermometer size={16} /> {t('temperature')}
           </MetricBtn>
           <MetricBtn active={metric === 'rain'} onClick={() => setMetric('rain')}>
-            <CloudRain size={16} /> Rain
+            <CloudRain size={16} /> {t('rainfall')}
           </MetricBtn>
           <MetricBtn active={metric === 'aqi'} onClick={() => setMetric('aqi')}>
-            <Wind size={16} /> AQI
+            <Wind size={16} /> {language === 'ta' ? 'காற்று தரம் (AQI)' : 'AQI'}
           </MetricBtn>
         </MetricToggle>
 
         <LegendContainer>
-          <SectionHeader>Intensity Spectrum</SectionHeader>
+          <SectionHeader>{language === 'ta' ? 'தீவிரத்தன்மை அளவு' : 'Intensity Spectrum'}</SectionHeader>
           <LegendBar metric={metric} />
           <LegendLabels>
-            <span>Low ({metric === 'temp' ? '20°C' : metric === 'rain' ? '0mm' : '0 AQI'})</span>
-            <span>High ({metric === 'temp' ? '45°C+' : metric === 'rain' ? '100mm+' : '300 AQI+'})</span>
+            <span>{language === 'ta' ? 'குறைவு' : 'Low'} ({metric === 'temp' ? '20°C' : metric === 'rain' ? '0mm' : '0 AQI'})</span>
+            <span>{language === 'ta' ? 'அதிகம்' : 'High'} ({metric === 'temp' ? '45°C+' : metric === 'rain' ? '100mm+' : '300 AQI+'})</span>
           </LegendLabels>
         </LegendContainer>
 
-        <SectionHeader>Major Urban Centers</SectionHeader>
+        <SectionHeader>{language === 'ta' ? 'முக்கிய பெருநகரங்கள்' : 'Major Urban Centers'}</SectionHeader>
         <CityList>
-          {loadingCities && <div style={{ padding: '16px', color: '#6B8E9F', fontSize: '14px' }}>Loading real-time data...</div>}
+          {loadingCities && <div style={{ padding: '16px', color: '#6B8E9F', fontSize: '14px' }}>{language === 'ta' ? 'நிகழ்நேர தரவு ஏற்றப்படுகிறது...' : 'Loading real-time data...'}</div>}
           {!loadingCities && citiesData.map((city, i) => (
             <CityRow key={city.name} alternate={i % 2 === 1}>
               <CityName>
-                <MapPin size={14} color="#6B8E9F" /> {city.name}
+                <MapPin size={14} color="#6B8E9F" /> {tDistrict(city.name)}
               </CityName>
               <TempBadge level={getLevel(city.temp)}>
                 {metric === 'temp' ? `${city.temp}°C` : metric === 'rain' ? city.rain : `AQI ${city.aqi}`}
@@ -325,7 +327,7 @@ const IndiaOverview = () => {
         </CityList>
 
         <FooterNote>
-          <RefreshCw size={12} /> Refreshed 2 mins ago • Auto-sync ON
+          <RefreshCw size={12} /> {language === 'ta' ? '2 நிமிடங்களுக்கு முன் புதுப்பிக்கப்பட்டது • தானியங்கி ஒத்திசைவு செயலில் உள்ளது' : 'Refreshed 2 mins ago • Auto-sync ON'}
         </FooterNote>
       </Sidebar>
 
@@ -334,9 +336,9 @@ const IndiaOverview = () => {
           <h3 style={{ margin: 0, marginBottom: '8px', fontSize: '16px', color: '#1d3557' }}>
             {tooltip.stateName} ({tooltip.stateCode})
           </h3>
-          <div style={{ fontSize: '14px', marginBottom: '4px', color: '#457b9d' }}>Temperature: <strong>{tooltip.data.temp}°C</strong></div>
-          <div style={{ fontSize: '14px', marginBottom: '4px', color: '#457b9d' }}>Rain (24h): <strong>{tooltip.data.rain24h} mm</strong></div>
-          <div style={{ fontSize: '14px', color: '#457b9d' }}>AQI: <strong>{tooltip.data.aqi}</strong></div>
+          <div style={{ fontSize: '14px', marginBottom: '4px', color: '#457b9d' }}>{t('temperature')}: <strong>{tooltip.data.temp}°C</strong></div>
+          <div style={{ fontSize: '14px', marginBottom: '4px', color: '#457b9d' }}>{t('rainfall')} (24h): <strong>{tooltip.data.rain24h} mm</strong></div>
+          <div style={{ fontSize: '14px', color: '#457b9d' }}>{language === 'ta' ? 'காற்று தரம்' : 'AQI'}: <strong>{tooltip.data.aqi}</strong></div>
         </TooltipContainer>
       )}
     </PageContainer>

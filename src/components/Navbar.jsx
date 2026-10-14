@@ -1,6 +1,6 @@
 import { styled, keyframes } from '../stitches.config';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Map, Clock, Waves, Home, Shield, FileText, UserCheck, LogOut, LogIn, Globe, Cpu } from 'lucide-react';
+import { Map, Clock, Waves, Home, Shield, FileText, UserCheck, LogOut, LogIn, Globe, Cpu, Radio } from 'lucide-react';
 import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -22,26 +22,28 @@ const NavHeader = styled('nav', {
 });
 
 const NavContainer = styled('div', {
-  maxWidth: '1600px',
+  maxWidth: '100%',
   margin: '0 auto',
-  height: '72px',
-  padding: '0 $6',
+  height: '66px',
+  padding: '0 20px',
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'space-between',
-  '@mobile': { padding: '0 $4' },
+  gap: '12px',
+  '@mobile': { padding: '0 12px' },
 });
 
 const Logo = styled(Link, {
   display: 'flex',
   alignItems: 'center',
-  gap: '$3',
+  gap: '8px',
   textDecoration: 'none',
+  flexShrink: 0,
 });
 
 const LogoIcon = styled('div', {
-  width: '40px',
-  height: '40px',
+  width: '36px',
+  height: '36px',
   borderRadius: '$full',
   background: 'linear-gradient(135deg, #2A9D8F, #00BFA6)',
   display: 'flex',
@@ -49,34 +51,42 @@ const LogoIcon = styled('div', {
   justifyContent: 'center',
   color: 'white',
   boxShadow: '$sm',
+  flexShrink: 0,
 });
 
 const LogoText = styled('span', {
   fontFamily: '$heading',
   fontWeight: '$bold',
-  fontSize: '$xl',
+  fontSize: '18px',
   color: '$azure',
-  letterSpacing: '-0.5px',
+  letterSpacing: '-0.3px',
+  whiteSpace: 'nowrap',
 });
 
 const NavLinks = styled('div', {
   display: 'flex',
-  gap: '$2',
+  gap: '4px',
   alignItems: 'center',
+  flexWrap: 'nowrap',
+  overflowX: 'auto',
+  scrollbarWidth: 'none',
+  '&::-webkit-scrollbar': { display: 'none' },
   '@mobile': { display: 'none' },
 });
 
 const NavLink = styled(Link, {
   display: 'flex',
   alignItems: 'center',
-  gap: '$2',
-  padding: '$2 $4',
+  gap: '6px',
+  padding: '6px 11px',
   borderRadius: '$md',
-  fontSize: '$md',
+  fontSize: '13px',
   fontWeight: '$medium',
   color: '$fogGray',
   transition: 'all $fast',
   textDecoration: 'none',
+  whiteSpace: 'nowrap',
+  flexShrink: 0,
   '&:hover': {
     background: 'rgba(42, 157, 143, 0.08)',
     color: '$tealAccent',
@@ -96,7 +106,8 @@ const NavLink = styled(Link, {
 const RightSection = styled('div', {
   display: 'flex',
   alignItems: 'center',
-  gap: '$3',
+  gap: '8px',
+  flexShrink: 0,
 });
 
 const LangToggle = styled('button', {
@@ -105,12 +116,13 @@ const LangToggle = styled('button', {
   gap: '6px',
   background: '#ffffff',
   border: '1px solid #a8dadc',
-  padding: '6px 14px',
+  padding: '5px 12px',
   borderRadius: '20px',
   fontSize: '12px',
   fontWeight: '700',
   color: '#2a9d8f',
   cursor: 'pointer',
+  whiteSpace: 'nowrap',
   transition: 'all 0.2s ease',
   boxShadow: '0 2px 6px rgba(42, 157, 143, 0.06)',
   '&:hover': {
@@ -122,14 +134,15 @@ const LangToggle = styled('button', {
 const UserBadge = styled('div', {
   display: 'flex',
   alignItems: 'center',
-  gap: '8px',
+  gap: '6px',
   background: 'rgba(42, 157, 143, 0.08)',
   border: '1px solid #b8e6d5',
-  padding: '4px 12px',
+  padding: '4px 10px',
   borderRadius: '20px',
   fontSize: '12px',
   fontWeight: '600',
   color: '#2c3e50',
+  whiteSpace: 'nowrap',
 });
 
 const RoleChip = styled('span', {
@@ -140,6 +153,7 @@ const RoleChip = styled('span', {
   padding: '2px 6px',
   borderRadius: '4px',
   textTransform: 'uppercase',
+  whiteSpace: 'nowrap',
 });
 
 const Navbar = () => {
@@ -149,20 +163,21 @@ const Navbar = () => {
   const { language, toggleLanguage, t } = useLanguage();
 
   const publicLinks = [
-    { path: '/home', label: t('navHome'), icon: <Home size={18} /> },
-    { path: '/', label: t('navLiveMap'), icon: <Map size={18} /> },
-    { path: '/timeline', label: t('navTimeline'), icon: <Clock size={18} /> },
-    { path: '/architecture', label: 'Architecture', icon: <Cpu size={18} /> },
+    { path: '/home', label: t('navHome'), icon: <Home size={16} /> },
+    { path: '/', label: t('navLiveMap'), icon: <Map size={16} /> },
+    { path: '/timeline', label: t('navTimeline'), icon: <Clock size={16} /> },
+    { path: '/alerts', label: t('navAlerts'), icon: <Radio size={16} /> },
+    { path: '/architecture', label: t('navArchitecture'), icon: <Cpu size={16} /> },
   ];
 
   const citizenLinks = [
-    { path: '/citizen', label: t('navCitizen'), icon: <UserCheck size={18} /> },
-    { path: '/report', label: t('navReport'), icon: <FileText size={18} /> },
+    { path: '/citizen', label: t('navDashboard'), icon: <UserCheck size={16} /> },
+    { path: '/report', label: t('navReport'), icon: <FileText size={16} /> },
   ];
 
   const adminLinks = [
-    { path: '/admin', label: t('navAdmin'), icon: <Shield size={18} /> },
-    { path: '/simulator', label: t('navSimulator'), icon: <Waves size={18} /> },
+    { path: '/admin', label: t('navAdmin'), icon: <Shield size={16} /> },
+    { path: '/simulator', label: t('navSimulator'), icon: <Waves size={16} /> },
   ];
 
   let links = [...publicLinks];
@@ -204,9 +219,9 @@ const Navbar = () => {
 
         <RightSection>
           {/* Language Switcher */}
-          <LangToggle onClick={toggleLanguage} title="Toggle English / தமிழ்">
+          <LangToggle onClick={toggleLanguage} title={language === 'en' ? 'தமிழுக்கு மாறுக' : 'Switch to English'}>
             <Globe size={14} color="#2a9d8f" />
-            <span>{language === 'en' ? 'EN | தமிழ்' : 'தமிழ் | EN'}</span>
+            <span>{language === 'en' ? 'தமிழ்' : 'English'}</span>
           </LangToggle>
 
           {/* Account Indicator */}
@@ -214,11 +229,17 @@ const Navbar = () => {
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <UserBadge>
                 <span>{user?.full_name?.split(' ')[0]}</span>
-                <RoleChip>{user?.role}</RoleChip>
+                <RoleChip>
+                  {user?.role === 'ADMIN'
+                    ? (language === 'ta' ? 'நிர்வாகி' : 'ADMIN')
+                    : user?.role === 'DISTRICT_OFFICER'
+                    ? (language === 'ta' ? 'அதிகாரி' : 'OFFICER')
+                    : (language === 'ta' ? 'குடிமகன்' : 'CITIZEN')}
+                </RoleChip>
               </UserBadge>
               <button
                 onClick={handleLogout}
-                title="Sign Out"
+                title={t('navSignOut')}
                 style={{
                   background: '#ffffff',
                   border: '1px solid #f08080',
@@ -253,7 +274,7 @@ const Navbar = () => {
                 boxShadow: '0 4px 16px rgba(42, 157, 143, 0.3)',
               }}
             >
-              <LogIn size={16} /> {t('navLogin')}
+              <LogIn size={16} /> {t('navSignIn')}
             </Link>
           )}
         </RightSection>

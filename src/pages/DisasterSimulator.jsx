@@ -8,6 +8,8 @@ import { StatCard, StatValue, StatLabel } from '../components/Card';
 import { SeverityBadge } from '../components/Badge';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Activity, CloudRain, Clock, Shield, Navigation, MapPin, AlertTriangle, Layers, ExternalLink, Compass } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
+import { logRecentActivity } from '../utils/auditLogger';
 
 const DISTRICT_SPECS = {
   Chennai: { lat: 13.0827, lon: 80.2707, elevation: 6.0, zone: 'Coastal Cyclone Belt' },
@@ -288,6 +290,7 @@ function turfCircleToLatLngs(circleFeature) {
 }
 
 const DisasterSimulator = () => {
+  const { t, tDistrict } = useLanguage();
   const [district, setDistrict] = useState('Chennai');
   const [disasterType, setDisasterType] = useState('Flood');
   
@@ -317,6 +320,7 @@ const DisasterSimulator = () => {
     setIsSimulating(true);
     setOsrmRoute(null);
     setRouteEta(null);
+    logRecentActivity('SIMULATION', `${district} ${disasterType} Runoff Simulation`);
 
     const lat = selectedSpec.lat;
     const lon = selectedSpec.lon;
@@ -449,30 +453,30 @@ const DisasterSimulator = () => {
       <ControlPanel>
         <SectionTitle>
           <Activity size={22} color="#457B9D" />
-          {disasterType === 'Earthquake' ? 'Seismic Fault Simulator' : 'Flood Hazard Simulator'}
+          {disasterType === 'Earthquake' ? t('seismicFaultSimulator') : t('floodHazardSimulator')}
         </SectionTitle>
 
         <FieldGroup>
           <Label>
-            <MapPin size={16} color="#2A9D8F" /> Target District
+            <MapPin size={16} color="#2A9D8F" /> {t('targetDistrict')}
           </Label>
           <Select value={district} onChange={(e) => setDistrict(e.target.value)}>
-            <option value="Chennai">Chennai (Coastal Metropolis)</option>
-            <option value="Cuddalore">Cuddalore (Severe Cyclone Belt)</option>
-            <option value="Thoothukudi">Thoothukudi (Gulf Coast Port)</option>
-            <option value="Tiruchirappalli">Tiruchirappalli (Cauvery River Basin)</option>
-            <option value="Madurai">Madurai (Vaigai Basin)</option>
-            <option value="Coimbatore">Coimbatore (Western Ghats)</option>
+            <option value="Chennai">{tDistrict('Chennai')} ({t('coastalMetropolis')})</option>
+            <option value="Cuddalore">{tDistrict('Cuddalore')} ({t('severeCycloneBelt')})</option>
+            <option value="Thoothukudi">{tDistrict('Thoothukudi')} ({t('gulfCoastPort')})</option>
+            <option value="Tiruchirappalli">{tDistrict('Tiruchirappalli')} ({t('cauveryRiverBasin')})</option>
+            <option value="Madurai">{tDistrict('Madurai')} ({t('vaigaiBasin')})</option>
+            <option value="Coimbatore">{tDistrict('Coimbatore')} ({t('westernGhats')})</option>
           </Select>
         </FieldGroup>
 
         <FieldGroup>
           <Label>
-            <Layers size={16} color="#2A9D8F" /> Scenario Mode
+            <Layers size={16} color="#2A9D8F" /> {t('scenarioMode')}
           </Label>
           <Select value={disasterType} onChange={(e) => setDisasterType(e.target.value)}>
-            <option value="Flood">Coastal & Urban Flood</option>
-            <option value="Earthquake">Earthquake & Fault Rupture</option>
+            <option value="Flood">{t('coastalUrbanFlood')}</option>
+            <option value="Earthquake">{t('earthquakeFaultRupture')}</option>
           </Select>
         </FieldGroup>
 
@@ -481,7 +485,7 @@ const DisasterSimulator = () => {
             <FieldGroup>
               <SliderHeader>
                 <Label style={{ marginBottom: 0 }}>
-                  <CloudRain size={16} color="#2A9D8F" /> Rainfall Intensity
+                  <CloudRain size={16} color="#2A9D8F" /> {t('rainfallIntensity')}
                 </Label>
                 <SliderValue>{rainfall} mm</SliderValue>
               </SliderHeader>
@@ -506,7 +510,7 @@ const DisasterSimulator = () => {
             <FieldGroup>
               <SliderHeader>
                 <Label style={{ marginBottom: 0 }}>
-                  <Clock size={16} color="#2A9D8F" /> Event Duration
+                  <Clock size={16} color="#2A9D8F" /> {t('eventDuration')}
                 </Label>
                 <SliderValue>{duration} hrs</SliderValue>
               </SliderHeader>
@@ -533,7 +537,7 @@ const DisasterSimulator = () => {
             <FieldGroup>
               <SliderHeader>
                 <Label style={{ marginBottom: 0 }}>
-                  <Activity size={16} color="#2A9D8F" /> Earthquake Magnitude (Mw)
+                  <Activity size={16} color="#2A9D8F" /> {t('earthquakeMagnitude')}
                 </Label>
                 <SliderValue>{magnitude} Mw</SliderValue>
               </SliderHeader>
@@ -558,7 +562,7 @@ const DisasterSimulator = () => {
             <FieldGroup>
               <SliderHeader>
                 <Label style={{ marginBottom: 0 }}>
-                  <Compass size={16} color="#2A9D8F" /> Focal Depth (km)
+                  <Compass size={16} color="#2A9D8F" /> {t('focalDepth')}
                 </Label>
                 <SliderValue>{depth} km</SliderValue>
               </SliderHeader>
@@ -572,10 +576,10 @@ const DisasterSimulator = () => {
                   onChange={(e) => setDepth(Number(e.target.value))}
                 />
                 <SliderLabels>
-                  <span>5km (Shallow)</span>
+                  <span>5km ({t('shallow')})</span>
                   <span>15km</span>
                   <span>25km</span>
-                  <span>35km (Deep)</span>
+                  <span>35km ({t('deep')})</span>
                 </SliderLabels>
               </SliderContainer>
             </FieldGroup>
@@ -583,7 +587,7 @@ const DisasterSimulator = () => {
         )}
 
         <RunButton onClick={runSimulation} disabled={isSimulating}>
-          {isSimulating ? 'COMPUTING GIS SIMULATION...' : 'RUN DISASTER SIMULATION'}
+          {isSimulating ? t('computingSimulation') : t('runDisasterSimulation')}
         </RunButton>
 
         <AnimatePresence>
@@ -594,7 +598,7 @@ const DisasterSimulator = () => {
               exit={{ opacity: 0 }}
             >
               <div style={{ marginTop: '20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span style={{ fontWeight: 700, fontSize: '14px', color: '#2C3E50' }}>Impact Assessment</span>
+                <span style={{ fontWeight: 700, fontSize: '14px', color: '#2C3E50' }}>{t('impactAssessment')}</span>
                 <SeverityBadge level={simulationData.severity.toLowerCase()}>
                   [{simulationData.severity}]
                 </SeverityBadge>
@@ -602,15 +606,15 @@ const DisasterSimulator = () => {
 
               <ResultsGrid>
                 <StatCard>
-                  <StatLabel>Est. Affected Pop.</StatLabel>
+                  <StatLabel>{t('estAffectedPop')}</StatLabel>
                   <StatValue>{simulationData.affectedPop.toLocaleString()}</StatValue>
                 </StatCard>
                 <StatCard>
-                  <StatLabel>{simulationData.mode === 'Earthquake' ? 'Rupture Area' : 'Inundated Area'}</StatLabel>
+                  <StatLabel>{simulationData.mode === 'Earthquake' ? t('ruptureArea') : t('inundatedArea')}</StatLabel>
                   <StatValue>{simulationData.submergedArea} km²</StatValue>
                 </StatCard>
                 <StatCard css={{ gridColumn: 'span 2' }}>
-                  <StatLabel>{simulationData.mode === 'Earthquake' ? 'Peak Ground Accel. (PGA)' : 'Peak Water Level'}</StatLabel>
+                  <StatLabel>{simulationData.mode === 'Earthquake' ? t('peakGroundAccel') : t('peakWaterLevel')}</StatLabel>
                   <StatValue css={{ color: '$crimsonAlert', fontSize: '$xl' }}>
                     {simulationData.paramText}
                   </StatValue>
@@ -620,10 +624,10 @@ const DisasterSimulator = () => {
               {routeEta && (
                 <div style={{ marginTop: '14px', background: 'rgba(16,185,129,0.12)', padding: '10px 14px', borderRadius: '10px', border: '1px solid #10b981' }}>
                   <strong style={{ color: '#059669', fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <Navigation size={15} /> Road Route Calculated (OSRM)
+                    <Navigation size={15} /> {t('roadRouteCalculated')}
                   </strong>
                   <p style={{ margin: '3px 0 0 0', fontSize: '12px', color: '#2C3E50' }}>
-                    Path to <b>{routeEta.shelterName}</b>: <b>{routeEta.distKm} km</b> • Drive ETA: <b>{routeEta.durationMins} mins</b>
+                    {t('pathTo')} <b>{tDistrict(routeEta.shelterName)}</b>: <b>{routeEta.distKm} km</b> • {t('driveEta')} <b>{routeEta.durationMins} mins</b>
                   </p>
                 </div>
               )}
@@ -631,22 +635,22 @@ const DisasterSimulator = () => {
               <div style={{ marginTop: '16px' }}>
                 <div style={{ fontWeight: 700, marginBottom: '10px', fontSize: '13px', color: '#2C3E50', display: 'flex', alignItems: 'center', gap: '6px' }}>
                   <Shield size={16} color="#2A9D8F" />
-                  {simulationData.mode === 'Earthquake' ? 'Open-Ground Shelters' : 'Evacuation Shelters'} ({shelters.length} Available)
+                  {simulationData.mode === 'Earthquake' ? t('openGroundShelters') : t('evacuationShelters')} ({shelters.length} {t('available')})
                 </div>
                 {shelters.map((s, idx) => (
                   <ShelterCard key={idx}>
                     <ShelterHeader>
                       <div>
-                        <ShelterTitle>{s.name}</ShelterTitle>
+                        <ShelterTitle>{tDistrict(s.name)}</ShelterTitle>
                         <ShelterSub>
-                          Distance: {s.distance_km} km • Capacity: {s.capacity} persons • Tel: {s.contact_phone || '+91-44-28888000'}
+                          {t('distance')} {s.distance_km} km • {t('capacity')} {s.capacity} {t('persons')} • {t('tel')} {s.contact_phone || '+91-44-28888000'}
                         </ShelterSub>
                       </div>
                     </ShelterHeader>
                     {/* Task 1: Google Maps Live Navigation Route Button */}
                     <NavGoogleBtn onClick={() => handleOpenGoogleMapsNavigation(s.lat, s.lon)}>
                       <Navigation size={14} />
-                      Navigate to Safe Shelter (Google Maps)
+                      {t('navigateGoogleMaps')}
                       <ExternalLink size={12} />
                     </NavGoogleBtn>
                   </ShelterCard>
@@ -723,7 +727,7 @@ const DisasterSimulator = () => {
               >
                 <Tooltip permanent direction="top" offset={[0, -10]}>
                   <span style={{ fontWeight: 700, color: simulationData.mode === 'Earthquake' ? '#991b1b' : '#dc2626' }}>
-                    {simulationData.mode === 'Earthquake' ? `Fault Epicenter (${district})` : `Flood Epicenter (${district})`}
+                    {simulationData.mode === 'Earthquake' ? `${t('faultEpicenter')} (${tDistrict(district)})` : `${t('floodEpicenter')} (${tDistrict(district)})`}
                   </span>
                 </Tooltip>
               </CircleMarker>
@@ -738,15 +742,15 @@ const DisasterSimulator = () => {
                 >
                   <Popup>
                     <div style={{ fontFamily: 'Inter, sans-serif', fontSize: '13px' }}>
-                      <strong style={{ color: '#2A9D8F', fontSize: '14px' }}>{s.name}</strong><br />
-                      Capacity: <b>{s.capacity} persons</b><br />
-                      Distance: <b>{s.distance_km} km</b><br />
-                      Phone: <b>{s.contact_phone || '+91-44-28888000'}</b><br /><br />
+                      <strong style={{ color: '#2A9D8F', fontSize: '14px' }}>{tDistrict(s.name)}</strong><br />
+                      {t('capacity')} <b>{s.capacity} {t('persons')}</b><br />
+                      {t('distance')} <b>{s.distance_km} km</b><br />
+                      {t('tel')} <b>{s.contact_phone || '+91-44-28888000'}</b><br /><br />
                       <button
                         style={{ background: '#10b981', color: 'white', border: 'none', padding: '6px 10px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', fontSize: '11px' }}
                         onClick={() => handleOpenGoogleMapsNavigation(s.lat, s.lon)}
                       >
-                        Navigate via Google Maps
+                        {t('navigateGoogleMaps')}
                       </button>
                     </div>
                   </Popup>
@@ -758,21 +762,21 @@ const DisasterSimulator = () => {
 
         <Legend>
           <div style={{ fontWeight: 700, marginBottom: '6px', fontSize: '12px', color: '#457B9D' }}>
-            GIS Hazard Layers ({disasterType})
+            {t('gisHazardLayers')} ({disasterType === 'Earthquake' ? t('earthquakeFaultRupture') : t('coastalUrbanFlood')})
           </div>
           {disasterType === 'Earthquake' ? (
             <>
-              <LegendItem><LegendColor css={{ background: '#991b1b' }} /> MMI VIII+ Severe Rupture Zone</LegendItem>
-              <LegendItem><LegendColor css={{ background: '#ea580c' }} /> MMI VI-VII Damage Zone</LegendItem>
-              <LegendItem><LegendColor css={{ background: '#f59e0b' }} /> MMI IV-V Felt Tremor Zone</LegendItem>
-              <LegendItem><LegendColor css={{ background: '#10b981' }} /> OSRM Evacuation Route</LegendItem>
+              <LegendItem><LegendColor css={{ background: '#991b1b' }} /> {t('severeRuptureZone')}</LegendItem>
+              <LegendItem><LegendColor css={{ background: '#ea580c' }} /> {t('damageZone')}</LegendItem>
+              <LegendItem><LegendColor css={{ background: '#f59e0b' }} /> {t('feltTremorZone')}</LegendItem>
+              <LegendItem><LegendColor css={{ background: '#10b981' }} /> {t('osrmEvacRoute')}</LegendItem>
             </>
           ) : (
             <>
-              <LegendItem><LegendColor css={{ background: '#dc2626' }} /> Critical Inundation Zone</LegendItem>
-              <LegendItem><LegendColor css={{ background: '#ea580c' }} /> High Risk Buffer</LegendItem>
-              <LegendItem><LegendColor css={{ background: '#f59e0b' }} /> Moderate Risk Buffer</LegendItem>
-              <LegendItem><LegendColor css={{ background: '#10b981' }} /> OSRM Evacuation Route</LegendItem>
+              <LegendItem><LegendColor css={{ background: '#dc2626' }} /> {t('criticalInundationZone')}</LegendItem>
+              <LegendItem><LegendColor css={{ background: '#ea580c' }} /> {t('highRiskBuffer')}</LegendItem>
+              <LegendItem><LegendColor css={{ background: '#f59e0b' }} /> {t('moderateRiskBuffer')}</LegendItem>
+              <LegendItem><LegendColor css={{ background: '#10b981' }} /> {t('osrmEvacRoute')}</LegendItem>
             </>
           )}
         </Legend>

@@ -4,6 +4,7 @@ import { Card } from '../components/Card';
 import { SeverityBadge } from '../components/Badge';
 import { Button } from '../components/Button';
 import { Bell, MapPin, Clock, Radio, PhoneCall, CheckSquare, Map, FileText, Save, Phone } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 
 const pulseDot = keyframes({
   '0%, 100%': { opacity: 1, transform: 'scale(1)' },
@@ -214,48 +215,50 @@ const EmergencyList = styled('div', {
   color: '$slateText',
 });
 
-const ALERTS = [
-  {
-    severity: 'critical',
-    type: 'Flash Flood Warning',
-    district: 'Chennai Coastal',
-    message: 'Extreme precipitation predicted > 300mm over 24 hours. Immediate evacuation advisories issued for low-lying coastal basins including T. Nagar, Adyar, and Velachery.',
-    time: '2 mins ago',
-    source: 'IMD + ClimaShield Radar',
-  },
-  {
-    severity: 'high',
-    type: 'Severe Heatwave Advisory',
-    district: 'Madurai Region',
-    message: 'Surface temperatures projected to exceed 42°C. Vulnerable populations advised to stay indoors between 11:00 AM and 4:00 PM.',
-    time: '1 hour ago',
-    source: 'India Meteorological Dept',
-  },
-  {
-    severity: 'moderate',
-    type: 'Heavy Rainfall Alert',
-    district: 'Coimbatore District',
-    message: 'Sustained monsoon rain expected over next 12 hours. Local authorities monitoring reservoir runoff and dam levels.',
-    time: '3 hours ago',
-    source: 'TNSDMA Emergency Operations',
-  },
-];
-
 const LiveAlerts = () => {
+  const { t, tDistrict } = useLanguage();
+
+  const alerts = [
+    {
+      severity: 'critical',
+      type: t('alertFloodTitle'),
+      district: t('alertFloodDistrict'),
+      message: t('alertFloodMsg'),
+      time: `2 ${t('minsAgo')}`,
+      source: t('alertFloodSource'),
+    },
+    {
+      severity: 'high',
+      type: t('alertHeatTitle'),
+      district: t('alertHeatDistrict'),
+      message: t('alertHeatMsg'),
+      time: `1 ${t('hourAgo')}`,
+      source: t('alertHeatSource'),
+    },
+    {
+      severity: 'moderate',
+      type: t('alertRainTitle'),
+      district: t('alertRainDistrict'),
+      message: t('alertRainMsg'),
+      time: `3 ${t('hoursAgo')}`,
+      source: t('alertRainSource'),
+    },
+  ];
+
   return (
     <MainWrapper>
       <StatusBar>
         <LiveDot />
-        <Radio size={16} /> Live Disaster Feed Active • Auto-updates every 5 minutes
+        <Radio size={16} /> {t('liveDisasterFeedActive')}
       </StatusBar>
 
       <Container>
         <AlertFeed>
           <FeedHeader>
-            <Bell size={28} color="#E76F51" /> Active Emergency Alerts & Warnings
+            <Bell size={28} color="#E76F51" /> {t('activeEmergencyAlerts')}
           </FeedHeader>
 
-          {ALERTS.map((alert, i) => (
+          {alerts.map((alert, i) => (
             <AlertCard key={i} severity={alert.severity}>
               <AlertTopRow>
                 <AlertTitle>{alert.type}</AlertTitle>
@@ -272,16 +275,16 @@ const LiveAlerts = () => {
 
               <ActionGroup>
                 <Button variant="secondary" size="sm">
-                  <Map size={14} /> View Risk Map
+                  <Map size={14} /> {t('viewRiskMap')}
                 </Button>
                 <Button variant="ghost" size="sm">
-                  <FileText size={14} /> Evacuation Guide
+                  <FileText size={14} /> {t('evacuationGuide')}
                 </Button>
               </ActionGroup>
 
               <AlertMeta>
                 <span><Clock size={12} style={{ verticalAlign: 'middle' }} /> {alert.time}</span>
-                <span>Source: <strong>{alert.source}</strong></span>
+                <span>{t('source')} <strong>{alert.source}</strong></span>
               </AlertMeta>
             </AlertCard>
           ))}
@@ -290,15 +293,15 @@ const LiveAlerts = () => {
         <SidePanel>
           <div>
             <PanelTitle>
-              <Bell size={20} color="#2A9D8F" /> Alert Preferences
+              <Bell size={20} color="#2A9D8F" /> {t('alertPreferences')}
             </PanelTitle>
             <p style={{ fontSize: '14px', color: '#6B8E9F', marginTop: '4px' }}>
-              Subscribe to SMS & push notifications for your district.
+              {t('subscribeNotifications')}
             </p>
           </div>
 
           <div>
-            <SectionLabel>Select Target Districts</SectionLabel>
+            <SectionLabel>{t('selectTargetDistricts')}</SectionLabel>
             <CheckboxList>
               {['Chennai', 'Madurai', 'Coimbatore', 'Tiruchirappalli', 'Salem', 'Cuddalore'].map((d, i) => (
                 <CheckboxRow key={d}>
@@ -307,25 +310,25 @@ const LiveAlerts = () => {
                     defaultChecked={i < 2}
                     style={{ accentColor: '#2A9D8F', width: '18px', height: '18px', cursor: 'pointer' }}
                   />
-                  {d} District
+                  {tDistrict(d)} {t('districtSuffix')}
                 </CheckboxRow>
               ))}
             </CheckboxList>
           </div>
 
           <Button fullWidth variant="primary" size="md">
-            <Save size={16} /> Save Notification Settings
+            <Save size={16} /> {t('saveNotificationSettings')}
           </Button>
 
           <EmergencyBox>
             <EmergencyTitle>
-              <PhoneCall size={18} /> Emergency Helplines
+              <PhoneCall size={18} /> {t('emergencyHelplines')}
             </EmergencyTitle>
             <EmergencyList>
-              State Disaster Control: <strong>1070</strong><br />
-              District Helpline: <strong>1077</strong><br />
-              Emergency Ambulance: <strong>108</strong><br />
-              Fire & Rescue: <strong>101</strong>
+              {t('stateDisasterControl')}: <strong>1070</strong><br />
+              {t('districtHelpline')}: <strong>1077</strong><br />
+              {t('ambulance')}: <strong>108</strong><br />
+              {t('fireRescue')}: <strong>101</strong>
             </EmergencyList>
           </EmergencyBox>
         </SidePanel>

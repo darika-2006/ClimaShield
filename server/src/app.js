@@ -11,6 +11,7 @@ const authRoutes = require('./routes/authRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 const chatbotRoutes = require('./routes/chatbotRoutes');
 const alertRoutes = require('./routes/alertRoutes');
+const auditRoutes = require('./routes/auditRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -41,6 +42,7 @@ app.use('/api/v1/incidents', incidentRoutes);
 app.use('/api/v1/admin', adminRoutes);
 app.use('/api/v1/chat', chatbotRoutes);
 app.use('/api/v1/alerts', alertRoutes);
+app.use('/api/v1/audit', auditRoutes);
 
 // 4. 404 Not Found Handler
 app.use((req, res, next) => {

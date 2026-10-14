@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { useLanguage } from '../context/LanguageContext';
 import {
   Cpu, Database, Network, ShieldCheck, Activity, Layers, Terminal, Server,
   MapPin, Calculator, RefreshCw, CheckCircle, Info, Lock, ArrowRight, Radio, Compass, Filter
@@ -7,6 +8,7 @@ import {
 
 export default function ArchitectureHub() {
   const { user } = useAuth();
+  const { t, language } = useLanguage();
   const [activeTab, setActiveTab] = useState('BLUEPRINT'); // 'BLUEPRINT' | 'MATH' | 'TELEMETRY' | 'SECURITY'
 
   // Tab 1 Data Flow Scenario Selection
@@ -69,10 +71,16 @@ export default function ArchitectureHub() {
 
   const scenarioDescriptions = {
     FLOW_A: {
-      title: 'Flow A: Live Threat Scan & Shelter Navigation Pipeline',
-      badge: 'Scenario A',
+      title: language === 'ta' ? 'பாதை A: நேரலை அச்சுறுத்தல் பகுப்பாய்வு & முகாம் வழிகாட்டல் பைப்லைன்' : 'Flow A: Live Threat Scan & Shelter Navigation Pipeline',
+      badge: language === 'ta' ? 'சூழ்நிலை A' : 'Scenario A',
       color: '#00bfa6',
-      steps: [
+      steps: language === 'ta' ? [
+        '1. பயனரின் அட்சரேகை மற்றும் தீர்க்கரேகையை உலாவி ஜிபிஎஸ் தானாகக் கண்டறிகிறது.',
+        '2. Open-Meteo REST API நிகழ்நேர சுற்றுப்புற வானிலை அளவீடுகளை வழங்குகிறது.',
+        '3. Express `/api/v1/shelters/nearby` PostGIS ST_DistanceSphere புவிசார் தொலைவு வினவலை இயக்குகிறது.',
+        '4. OSRM வழியமைக்கும் எஞ்சின் சாலைப் பயணப் பாதையைக் கணக்கிடுகிறது.',
+        '5. Leaflet வரைபடம் பயனர் இருப்பிடம், முகாம்கள் மற்றும் கூகிள் வரைபட வழிகாட்டலை வழங்குகிறது.',
+      ] : [
         '1. Client Geolocation auto-detects user latitude and longitude.',
         '2. Open-Meteo REST API returns real-time ambient weather metrics.',
         '3. Express `/api/v1/shelters/nearby` calls PostGIS ST_DistanceSphere geodesic query.',
@@ -81,10 +89,16 @@ export default function ArchitectureHub() {
       ],
     },
     FLOW_B: {
-      title: 'Flow B: Admin Disaster Broadcast & Citizen Sync Loop',
-      badge: 'Scenario B',
+      title: language === 'ta' ? 'பாதை B: நிர்வாக பேரிடர் ஒளிபரப்பு & குடிமக்கள் ஒத்திசைவு சுழற்சி' : 'Flow B: Admin Disaster Broadcast & Citizen Sync Loop',
+      badge: language === 'ta' ? 'சூழ்நிலை B' : 'Scenario B',
       color: '#e76f51',
-      steps: [
+      steps: language === 'ta' ? [
+        '1. அதிகாரி கட்டளை மையத்தில் (/admin) அவசர எச்சரிக்கை படிவத்தை நிரப்புகிறார்.',
+        '2. Express `/api/v1/admin/broadcast` JWT ஐ சரிபார்த்து ADMIN பங்கை உறுதிப்படுத்துகிறது.',
+        '3. எச்சரிக்கை Supabase PostgreSQL `alerts` அட்டவணையில் சேமிக்கப்படுகிறது.',
+        '4. குடிமக்கள் முகப்பு பலகை (/citizen) சொந்த மாவட்டத்திற்கான செயலில் உள்ள எச்சரிக்கைகளைப் பெறுகிறது.',
+        '5. குடிமகனின் தனிநபர் பாதுகாப்பு மதிப்பீடு 95/100 இலிருந்து 25/100 ஆகக் குறைகிறது.',
+      ] : [
         '1. Admin fills broadcast advisory form on Command Center (/admin).',
         '2. Express `/api/v1/admin/broadcast` validates JWT and verifies ADMIN role.',
         '3. Advisory is recorded in Supabase PostgreSQL `alerts` table.',
@@ -93,10 +107,15 @@ export default function ArchitectureHub() {
       ],
     },
     FLOW_C: {
-      title: 'Flow C: Time Machine Historical Climate Comparison',
-      badge: 'Scenario C',
+      title: language === 'ta' ? 'பாதை C: கால இயந்திரம் - வரலாற்று காலநிலை ஒப்பீடு' : 'Flow C: Time Machine Historical Climate Comparison',
+      badge: language === 'ta' ? 'சூழ்நிலை C' : 'Scenario C',
       color: '#457b9d',
-      steps: [
+      steps: language === 'ta' ? [
+        '1. பயனர் 2014 முதல் 2024 வரையிலான காலவரிசை ஸ்லைடரை நகர்த்துகிறார்.',
+        '2. Express `historical_climate` அட்டவணையில் இருந்து 34 ஆண்டு கால காலநிலை தரவை எடுக்கிறது.',
+        '3. Recharts பல தசாப்த வெப்பநிலை மற்றும் மழைப்பொழிவு பகுப்பாய்வை வரைகிறது.',
+        '4. Esri Wayback WMTS வரலாற்று செயற்கைக்கோள் காட்சியை நவீன வரைபடத்துடன் ஒத்திசைக்கிறது.',
+      ] : [
         '1. User scrubs timeline slider between 2014 and 2024.',
         '2. Express fetches 34-year climate series from `historical_climate` table.',
         '3. Recharts renders multi-decadal temperature and rainfall analytics.',
@@ -287,13 +306,13 @@ export default function ArchitectureHub() {
         {/* Header */}
         <div style={{ background: 'linear-gradient(135deg, #2a9d8f, #457b9d)', color: '#ffffff', borderRadius: '16px', padding: '24px 28px', marginBottom: '28px', boxShadow: '0 8px 24px rgba(42, 157, 143, 0.2)' }}>
           <div style={{ fontSize: '12px', color: '#d4f1f4', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' }}>
-            System Architecture & Technical Audit Center
+            {t('architectureAuditCenter')}
           </div>
           <h1 style={{ margin: '0 0 6px 0', fontSize: '26px', fontWeight: '800', fontFamily: 'Poppins, sans-serif' }}>
-            ClimaShield TN — Behind the Scenes Architecture
+            {t('architectureHeading')}
           </h1>
           <p style={{ margin: 0, fontSize: '14px', color: '#e8f4f8' }}>
-            Role-Adaptive Full-Stack Engineering Blueprint, PostGIS Geodesic Models, & Live Latency Benchmarks
+            {t('architectureSubheading')}
           </p>
         </div>
 
@@ -317,7 +336,7 @@ export default function ArchitectureHub() {
               gap: '8px',
             }}
           >
-            <Layers size={16} /> Tab 1: System Blueprint & Data Flow
+            <Layers size={16} /> {t('tabBlueprint')}
           </button>
 
           <button
@@ -338,7 +357,7 @@ export default function ArchitectureHub() {
               gap: '8px',
             }}
           >
-            <Calculator size={16} /> Tab 2: Mathematical & PostGIS Models
+            <Calculator size={16} /> {t('tabMath')}
           </button>
 
           <button
@@ -359,7 +378,7 @@ export default function ArchitectureHub() {
               gap: '8px',
             }}
           >
-            <Activity size={16} /> Tab 3: Live Telemetry Monitor
+            <Activity size={16} /> {t('tabTelemetry')}
           </button>
 
           <button
@@ -380,7 +399,7 @@ export default function ArchitectureHub() {
               gap: '8px',
             }}
           >
-            <ShieldCheck size={16} /> Tab 4: Security & RBAC Provenance
+            <ShieldCheck size={16} /> {t('tabSecurity')}
           </button>
         </div>
 
@@ -390,7 +409,7 @@ export default function ArchitectureHub() {
             {/* Scenario Selector Ribbon */}
             <div style={{ background: '#ffffff', border: '1px solid #b8e6d5', borderRadius: '16px', padding: '20px 24px', boxShadow: '0 8px 24px rgba(42, 157, 143, 0.08)' }}>
               <div style={{ fontSize: '12px', fontWeight: '700', color: '#6b8e9f', textTransform: 'uppercase', marginBottom: '10px', letterSpacing: '0.04em' }}>
-                Select End-to-End Execution Scenario (Data Pipeline Visualizer)
+                {language === 'ta' ? 'முழுமையான தரவுச் செயல்பாட்டுக் காட்சியைத் தேர்வுசெய்க (தரவு பைப்லைன் காட்சிப்படுத்தி)' : 'Select End-to-End Execution Scenario (Data Pipeline Visualizer)'}
               </div>
               <div style={{ display: 'flex', gap: '12px', marginBottom: '16px' }}>
                 <button
@@ -411,7 +430,7 @@ export default function ArchitectureHub() {
                     gap: '8px',
                   }}
                 >
-                  <Compass size={16} color="#00bfa6" /> Flow A: Live Threat & Route
+                  <Compass size={16} color="#00bfa6" /> {language === 'ta' ? 'பாதை A: நேரலை அச்சுறுத்தல் & பாதை' : 'Flow A: Live Threat & Route'}
                 </button>
 
                 <button
@@ -432,7 +451,7 @@ export default function ArchitectureHub() {
                     gap: '8px',
                   }}
                 >
-                  <Radio size={16} color="#e76f51" /> Flow B: Admin Broadcast Alert
+                  <Radio size={16} color="#e76f51" /> {language === 'ta' ? 'பாதை B: நிர்வாக அவசர எச்சரிக்கை' : 'Flow B: Admin Broadcast Alert'}
                 </button>
 
                 <button
@@ -453,7 +472,7 @@ export default function ArchitectureHub() {
                     gap: '8px',
                   }}
                 >
-                  <RefreshCw size={16} color="#457b9d" /> Flow C: Satellite Time Machine
+                  <RefreshCw size={16} color="#457b9d" /> {language === 'ta' ? 'பாதை C: செயற்கைக்கோள் கால இயந்திரம்' : 'Flow C: Satellite Time Machine'}
                 </button>
               </div>
 
@@ -481,10 +500,10 @@ export default function ArchitectureHub() {
               {/* Architecture Tiered Diagram View */}
               <div style={{ background: '#ffffff', border: '1px solid #b8e6d5', borderRadius: '16px', padding: '24px', boxShadow: '0 8px 24px rgba(42, 157, 143, 0.08)', display: 'flex', flexDirection: 'column', gap: '20px' }}>
                 <h2 style={{ margin: 0, fontSize: '18px', color: '#2c3e50', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '700' }}>
-                  <Layers size={20} color="#2a9d8f" /> Tiered End-to-End System Blueprint
+                  <Layers size={20} color="#2a9d8f" /> {language === 'ta' ? 'அடுக்குமுறை முழுமையான கணினி கட்டமைப்பு வரைபடம்' : 'Tiered End-to-End System Blueprint'}
                 </h2>
                 <p style={{ margin: 0, fontSize: '12px', color: '#6b8e9f' }}>
-                  Click any module node below to inspect data contracts, execution runtime, and driver libraries:
+                  {language === 'ta' ? 'தரவு ஒப்பந்தங்கள், இயக்க சூழல் மற்றும் நூலகங்களை ஆய்வு செய்ய கீழே உள்ள எந்த தொகுதியையும் கிளிக் செய்க:' : 'Click any module node below to inspect data contracts, execution runtime, and driver libraries:'}
                 </p>
 
                 {/* 1. CLIENT TIER */}

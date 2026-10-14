@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '../components/Button';
 import { Card } from '../components/Card';
 import { Map, Clock, Waves, Bell, ArrowRight, Shield, Thermometer, CloudRain, AlertTriangle, Users, Globe } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 
 const float = keyframes({
   '0%, 100%': { transform: 'translateY(0px)' },
@@ -206,33 +207,35 @@ const TickerItem = styled('div', {
 });
 
 const HomePage = () => {
+  const { t } = useLanguage();
+
   const cards = [
     {
       icon: <Map size={26} />,
       color: '$tealAccent',
-      title: 'Tamil Nadu Live GIS',
-      desc: 'Interactive live heatmap across all 38 districts with temperature & precipitation metrics.',
+      title: t('featureLiveMapTitle'),
+      desc: t('featureLiveMapDesc'),
       link: '/',
     },
     {
       icon: <Clock size={26} />,
       color: '$azure',
-      title: 'Time Machine',
-      desc: 'Explore 1990-2024 historical climate trends & city-level warming anomalies.',
+      title: t('featureTimelineTitle'),
+      desc: t('featureTimelineDesc'),
       link: '/timeline',
     },
     {
       icon: <Waves size={26} />,
       color: '$sunsetCoral',
-      title: 'Disaster Simulator',
-      desc: 'Simulate flood & earthquake scenarios with Google Maps evacuation navigation.',
+      title: t('featureSimulatorTitle'),
+      desc: t('featureSimulatorDesc'),
       link: '/simulator',
     },
     {
       icon: <Bell size={26} />,
       color: '$amberGlow',
-      title: 'Live Alerts',
-      desc: 'Subscribe to real-time disaster warnings & district-level emergency advisories.',
+      title: t('featureAlertsTitle'),
+      desc: t('featureAlertsDesc'),
       link: '/alerts',
     },
   ];
@@ -243,21 +246,20 @@ const HomePage = () => {
         <HeroContainer>
           <HeroContent>
             <BadgeTag>
-              <Shield size={16} color="#00BFA6" /> TAMIL NADU CLIMATE RESILIENCE SYSTEM
+              <Shield size={16} color="#00BFA6" /> {t('heroBadge')}
             </BadgeTag>
             <HeroTitle>
-              Climate Intelligence for a Resilient Tamil Nadu
+              {t('heroTitle')}
             </HeroTitle>
             <HeroSubtitle>
-              Real-time weather monitoring • Predictive disaster simulations •
-              Live emergency warnings • Google Maps evacuation guidance
+              {t('heroSubtitle')}
             </HeroSubtitle>
             <HeroButtons>
               <Button as={Link} to="/" variant="primary" size="lg">
-                Explore GIS Map
+                {t('exploreGisMap')}
               </Button>
               <Button as={Link} to="/simulator" variant="secondary" size="lg">
-                Run Simulator
+                {t('runSimulator')}
               </Button>
             </HeroButtons>
           </HeroContent>
@@ -277,17 +279,17 @@ const HomePage = () => {
             <CardTitle>{card.title}</CardTitle>
             <CardDesc>{card.desc}</CardDesc>
             <CardFooter>
-              Explore Module <ArrowRight size={16} />
+              {t('exploreModule')} <ArrowRight size={16} />
             </CardFooter>
           </FeatureCard>
         ))}
       </CardsGrid>
 
       <StatsTicker>
-        <TickerItem><Thermometer size={16} color="#2A9D8F" /> Avg Temp: <strong>31.2°C</strong></TickerItem>
-        <TickerItem><CloudRain size={16} color="#2A9D8F" /> Rainfall: <strong>145mm</strong></TickerItem>
-        <TickerItem><AlertTriangle size={16} color="#E76F51" /> Active Alerts: <strong style={{ color: '#E76F51' }}>2 Critical</strong></TickerItem>
-        <TickerItem><Users size={16} color="#457B9D" /> Monitoring: <strong>38 Districts Active</strong></TickerItem>
+        <TickerItem><Thermometer size={16} color="#2A9D8F" /> {t('avgTempLabel')} <strong>31.2°C</strong></TickerItem>
+        <TickerItem><CloudRain size={16} color="#2A9D8F" /> {t('rainfallTicker')} <strong>145mm</strong></TickerItem>
+        <TickerItem><AlertTriangle size={16} color="#E76F51" /> {t('activeAlertsTicker')} <strong style={{ color: '#E76F51' }}>{t('criticalAlertsCount')}</strong></TickerItem>
+        <TickerItem><Users size={16} color="#457B9D" /> {t('monitoringTicker')} <strong>{t('districtsActiveTicker')}</strong></TickerItem>
       </StatsTicker>
     </>
   );

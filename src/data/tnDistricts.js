@@ -368,13 +368,16 @@ export function getDistrictMeta(rawName) {
   const aliases = {
     "The Nilgiris": "Nilgiris",
     "Tuticorin": "Thoothukudi",
+    "Thoothukkudi": "Thoothukudi",
     "Trichy": "Tiruchirappalli",
     "Trichirappalli": "Tiruchirappalli",
     "Thiruvarur": "Tiruvarur",
     "Kanchi": "Kanchipuram",
+    "Kancheepuram": "Kanchipuram",
     "Thiruvallur": "Tiruvallur",
     "Villupuram": "Viluppuram",
-    "Kanniyakumari": "Kanyakumari"
+    "Kanniyakumari": "Kanyakumari",
+    "Tirupattur": "Tirupathur",
   };
 
   if (aliases[clean] && TN_DISTRICTS[aliases[clean]]) {

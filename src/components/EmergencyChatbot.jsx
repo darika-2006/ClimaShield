@@ -154,13 +154,13 @@ export default function EmergencyChatbot() {
             }}
           >
             <a href="tel:1070" style={{ textDecoration: 'none', background: '#fff0f0', border: '1px solid #f08080', color: '#e76f51', padding: '4px 8px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: '700' }}>
-              <Phone size={12} /> State: 1070
+              <Phone size={12} /> {t('stateHotline')}
             </a>
             <a href="tel:1077" style={{ textDecoration: 'none', background: '#fffdf0', border: '1px solid #ffd97d', color: '#f4a261', padding: '4px 8px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: '700' }}>
-              <Phone size={12} /> District: 1077
+              <Phone size={12} /> {t('districtHotline')}
             </a>
             <a href="tel:108" style={{ textDecoration: 'none', background: '#f0fbfd', border: '1px solid #a8dadc', color: '#457b9d', padding: '4px 8px', borderRadius: '12px', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: '700' }}>
-              <Phone size={12} /> Medical: 108
+              <Phone size={12} /> {t('medicalHotline')}
             </a>
           </div>
 
@@ -201,32 +201,42 @@ export default function EmergencyChatbot() {
             ))}
             {loading && (
               <div style={{ alignSelf: 'flex-start', background: '#ffffff', border: '1px solid #b8e6d5', padding: '8px 14px', borderRadius: '12px', fontSize: '12px', color: '#6b8e9f' }}>
-                Executing AI inference...
+                {t('executingInference')}
               </div>
             )}
           </div>
 
           {/* Suggested Actions Strip */}
           <div style={{ padding: '8px 12px', background: '#ffffff', borderTop: '1px solid #b8e6d5', display: 'flex', gap: '6px', overflowX: 'auto' }}>
-            {suggestedActions.map((action, idx) => (
-              <button
-                key={idx}
-                onClick={() => handleSend(action)}
-                style={{
-                  background: '#e8f4f8',
-                  border: '1px solid #a8dadc',
-                  borderRadius: '14px',
-                  padding: '4px 10px',
-                  fontSize: '11px',
-                  color: '#2a9d8f',
-                  cursor: 'pointer',
-                  whiteSpace: 'nowrap',
-                  fontWeight: '600',
-                }}
-              >
-                {action}
-              </button>
-            ))}
+            {suggestedActions.map((action, idx) => {
+              const actionLabel =
+                action === 'Nearest Shelters'
+                  ? t('nearestSheltersAction')
+                  : action === 'Flood Safety Protocol'
+                  ? t('floodSafetyProtocolAction')
+                  : action === 'Emergency Hotlines'
+                  ? t('emergencyHotlinesAction')
+                  : action;
+              return (
+                <button
+                  key={idx}
+                  onClick={() => handleSend(action)}
+                  style={{
+                    background: '#e8f4f8',
+                    border: '1px solid #a8dadc',
+                    borderRadius: '14px',
+                    padding: '4px 10px',
+                    fontSize: '11px',
+                    color: '#2a9d8f',
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap',
+                    fontWeight: '600',
+                  }}
+                >
+                  {actionLabel}
+                </button>
+              );
+            })}
           </div>
 
           {/* Input Footer */}
